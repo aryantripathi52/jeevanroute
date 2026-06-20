@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import GlassCard from '@/components/GlassCard'
+import GlassInput from '@/components/GlassInput'
+import GlassButton from '@/components/GlassButton'
 
 export default function SignupPage() {
   const router = useRouter()
@@ -80,29 +83,29 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="glass-card p-8 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-secondary">
+      <GlassCard className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-xl">JR</span>
           </div>
-          <h1 className="text-2xl font-bold text-white">Create Account</h1>
-          <p className="text-white/70 mt-1">Join JeevanRoute</p>
+          <h1 className="text-2xl font-bold text-primary">Create Account</h1>
+          <p className="text-secondary text-sm mt-1">Join JeevanRoute</p>
         </div>
 
         {error && (
-          <div className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-4">
-            <p className="text-red-300 text-sm">{error}</p>
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 mb-4">
+            <p className="text-sm">{error}</p>
           </div>
         )}
 
         <div className="space-y-3 mb-6">
-          <p className="text-white/50 text-sm text-center">Sign up as:</p>
+          <p className="text-secondary text-sm text-center">Sign up as:</p>
           
           <button
             onClick={() => handleGoogleSignup('ambulance')}
             disabled={googleLoading === 'ambulance'}
-            className="w-full glass-input py-3 rounded-lg text-white flex items-center justify-center gap-3 hover:bg-white/10 transition-all disabled:opacity-50"
+            className="w-full btn btn-secondary py-3"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -116,7 +119,7 @@ export default function SignupPage() {
           <button
             onClick={() => handleGoogleSignup('hospital')}
             disabled={googleLoading === 'hospital'}
-            className="w-full glass-input py-3 rounded-lg text-white flex items-center justify-center gap-3 hover:bg-white/10 transition-all disabled:opacity-50"
+            className="w-full btn btn-secondary py-3"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -130,58 +133,55 @@ export default function SignupPage() {
 
         <div className="relative mb-6">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-white/20"></div>
+            <div className="w-full border-t border-gray-200"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-transparent text-white/70">or sign up with email</span>
+            <span className="px-4 bg-white text-secondary">or sign up with email</span>
           </div>
         </div>
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label className="text-white/70 text-sm block mb-1">Email</label>
-            <input
+            <label className="text-secondary text-sm block mb-1 font-medium">Email</label>
+            <GlassInput
               type="email"
               placeholder="you@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full glass-input px-4 py-3 rounded-lg text-white placeholder-white/40 outline-none"
               required
             />
           </div>
           <div>
-            <label className="text-white/70 text-sm block mb-1">Password</label>
-            <input
+            <label className="text-secondary text-sm block mb-1 font-medium">Password</label>
+            <GlassInput
               type="password"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full glass-input px-4 py-3 rounded-lg text-white placeholder-white/40 outline-none"
               required
             />
           </div>
           <div>
-            <label className="text-white/70 text-sm block mb-1">Confirm Password</label>
-            <input
+            <label className="text-secondary text-sm block mb-1 font-medium">Confirm Password</label>
+            <GlassInput
               type="password"
               placeholder="••••••••"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full glass-input px-4 py-3 rounded-lg text-white placeholder-white/40 outline-none"
               required
             />
           </div>
 
           <div className="mb-4">
-            <label className="text-white/70 text-sm block mb-3">Sign up as:</label>
+            <label className="text-secondary text-sm block mb-3 font-medium">Sign up as:</label>
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
                 onClick={() => setRole('ambulance')}
-                className={`p-4 rounded-xl border transition-all ${
+                className={`p-4 rounded-lg border transition-all ${
                   role === 'ambulance'
-                    ? 'border-red-500 bg-red-500/20 text-white'
-                    : 'border-white/20 bg-white/10 text-white/70 hover:border-white/30'
+                    ? 'border-red-500 bg-red-50 text-primary'
+                    : 'border-gray-200 bg-white text-secondary hover:bg-gray-50'
                 }`}
               >
                 <div className="text-2xl mb-1">🚑</div>
@@ -190,10 +190,10 @@ export default function SignupPage() {
               <button
                 type="button"
                 onClick={() => setRole('hospital')}
-                className={`p-4 rounded-xl border transition-all ${
+                className={`p-4 rounded-lg border transition-all ${
                   role === 'hospital'
-                    ? 'border-blue-500 bg-blue-500/20 text-white'
-                    : 'border-white/20 bg-white/10 text-white/70 hover:border-white/30'
+                    ? 'border-blue-500 bg-blue-50 text-primary'
+                    : 'border-gray-200 bg-white text-secondary hover:bg-gray-50'
                 }`}
               >
                 <div className="text-2xl mb-1">🏥</div>
@@ -202,22 +202,23 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <button
+          <GlassButton
             type="submit"
+            variant="primary"
             disabled={loading || !role}
-            className="w-full bg-red-500 hover:bg-red-600 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-all"
+            className="w-full"
           >
             {loading ? 'Creating Account...' : 'Sign Up'}
-          </button>
+          </GlassButton>
         </form>
 
-        <p className="text-center text-white/70 mt-6">
+        <p className="text-center text-secondary text-sm mt-6">
           Already have an account?{' '}
-          <Link href="/auth/login" className="text-red-400 hover:text-red-300 font-medium">
+          <Link href="/auth/login" className="text-accent hover:text-accent-hover font-medium">
             Login
           </Link>
         </p>
-      </div>
+      </GlassCard>
     </div>
   )
 }

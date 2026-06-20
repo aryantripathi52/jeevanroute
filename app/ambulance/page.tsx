@@ -6,7 +6,6 @@ import { GoogleMap, Marker, DirectionsRenderer, useJsApiLoader } from '@react-go
 import { supabase, ScoredHospital, Hospital, TriageResult, Alert } from '@/lib/supabase'
 import GlassCard from '@/components/GlassCard'
 import GlassButton from '@/components/GlassButton'
-import GlassNav from '@/components/GlassNav'
 import StatusBadge from '@/components/StatusBadge'
 import HospitalCard from '@/components/HospitalCard'
 import Link from 'next/link'
@@ -358,37 +357,38 @@ export default function AmbulanceDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white">
+      <div className="min-h-screen flex items-center justify-center text-primary bg-primary">
         Loading...
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen">
-      <GlassNav>
-        <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-secondary">
+      {/* Navigation */}
+      <nav className="navbar">
+        <div className="flex justify-between items-center max-w-7xl mx-auto">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-lg font-bold">
+            <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center text-lg font-bold text-white">
               {operatorProfile?.operator_name?.charAt(0) || 'O'}
             </div>
-            <span className="text-white font-medium">{operatorProfile?.operator_name}</span>
+            <span className="text-primary font-medium">{operatorProfile?.operator_name}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-white">JeevanRoute</span>
+            <span className="text-xl font-bold text-primary">JeevanRoute</span>
           </div>
           <div className="flex items-center gap-4">
-            <button className="text-white/80 hover:text-white">Profile</button>
-            <button onClick={handleLogout} className="text-white/80 hover:text-white">Logout</button>
-            <span className="text-white/80">🚑 {operatorProfile?.vehicle_number}</span>
+            <button className="text-secondary hover:text-primary font-medium">Profile</button>
+            <button onClick={handleLogout} className="text-secondary hover:text-primary font-medium">Logout</button>
+            <span className="text-secondary">🚑 {operatorProfile?.vehicle_number}</span>
           </div>
         </div>
-      </GlassNav>
+      </nav>
 
       <div className="flex h-[calc(100vh-100px)] p-4 gap-4">
         {/* Left Panel: Intake */}
         <GlassCard className="w-1/3 p-6 overflow-y-auto">
-          <h2 className="text-xl font-bold text-white mb-6">Patient Condition</h2>
+          <h2 className="text-xl font-bold text-primary mb-6">Patient Condition</h2>
 
           {/* Condition Pills */}
           <div className="grid grid-cols-2 gap-3 mb-6">
@@ -396,10 +396,10 @@ export default function AmbulanceDashboard() {
               <button
                 key={c.id}
                 onClick={() => setCondition(c.id)}
-                className={`py-3 px-4 rounded-xl border font-medium transition-all ${
+                className={`py-3 px-4 rounded-lg border font-medium transition-all ${
                   condition === c.id
-                    ? 'border-red-500 bg-red-500/20 text-white'
-                    : 'border-white/20 bg-white/10 text-white/70 hover:bg-white/15'
+                    ? 'border-red-500 bg-red-50 text-primary'
+                    : 'border-gray-200 bg-white text-secondary hover:bg-gray-50'
                 }`}
               >
                 {c.icon} {c.label}
@@ -410,9 +410,9 @@ export default function AmbulanceDashboard() {
           {/* Severity Slider */}
           <div className="mb-6">
             <div className="flex justify-between items-center mb-3">
-              <span className="text-white/80">Severity</span>
+              <span className="text-secondary">Severity</span>
               <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-white">{severity}</span>
+                <span className="text-2xl font-bold text-primary">{severity}</span>
                 <StatusBadge status={getSeverityLabel(severity)} />
               </div>
             </div>
@@ -423,9 +423,8 @@ export default function AmbulanceDashboard() {
               value={severity}
               onChange={(e) => setSeverity(parseInt(e.target.value))}
               className="w-full"
-              style={{ color: severity <= 3 ? '#22C55E' : severity <= 6 ? '#EAB308' : '#EF4444' }}
             />
-            <div className="flex justify-between text-xs text-white/60 mt-2">
+            <div className="flex justify-between text-xs text-tertiary mt-2">
               <span>1 — Mild</span>
               <span>5 — High</span>
               <span>10 — Critical</span>
@@ -435,21 +434,21 @@ export default function AmbulanceDashboard() {
           {/* Age & Blood Group */}
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <label className="block text-sm text-white/70 mb-2">Age</label>
+              <label className="block text-sm text-secondary mb-2 font-medium">Age</label>
               <input
                 type="number"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/60 focus:outline-none"
+                className="input"
                 placeholder="45"
               />
             </div>
             <div>
-              <label className="block text-sm text-white/70 mb-2">Blood Group</label>
+              <label className="block text-sm text-secondary mb-2 font-medium">Blood Group</label>
               <select
                 value={bloodGroup}
                 onChange={(e) => setBloodGroup(e.target.value)}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white focus:outline-none"
+                className="input"
               >
                 <option value="">Select</option>
                 {BLOOD_GROUPS.map((bg) => (
@@ -461,21 +460,21 @@ export default function AmbulanceDashboard() {
 
           {/* Location */}
           <div className="mb-6">
-            <label className="block text-sm text-white/70 mb-2">Location</label>
+            <label className="block text-sm text-secondary mb-2 font-medium">Location</label>
             <div className="flex gap-3 mb-3">
               <button
                 onClick={detectLocation}
                 disabled={locating}
-                className="flex-1 py-3 px-4 rounded-xl border border-white/20 bg-white/10 text-white font-medium hover:bg-white/15 transition-all"
+                className="flex-1 py-3 px-4 rounded-lg border border-gray-300 bg-white text-primary font-medium hover:bg-gray-50 transition-all"
               >
                 {locating ? 'Detecting...' : '📍 Auto'}
               </button>
-              <button className="py-3 px-4 rounded-xl border border-white/20 bg-white/10 text-white font-medium hover:bg-white/15 transition-all">
+              <button className="py-3 px-4 rounded-lg border border-gray-300 bg-white text-primary font-medium hover:bg-gray-50 transition-all">
                 Manual
               </button>
             </div>
             {location && (
-              <p className="text-sm text-white/70">
+              <p className="text-sm text-secondary">
                 {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
               </p>
             )}
@@ -483,7 +482,7 @@ export default function AmbulanceDashboard() {
 
           {/* Suggest Button */}
           <GlassButton
-            variant="red"
+            variant="primary"
             className="w-full"
             onClick={handleSuggestHospitals}
             disabled={!condition || !age || !bloodGroup || !location}
@@ -493,43 +492,38 @@ export default function AmbulanceDashboard() {
 
           {/* Status */}
           {requestStatus && (
-            <p className="text-center text-white/70 mt-4">{requestStatus}</p>
+            <p className="text-center text-secondary mt-4">{requestStatus}</p>
           )}
         </GlassCard>
 
         {/* Right Panel: Map & Hospitals */}
         <GlassCard className="flex-1 flex flex-col">
-          <div className="flex-1 bg-black/20 rounded-xl m-4 overflow-hidden relative min-h-[300px]">
+          <div className="flex-1 bg-gray-50 rounded-xl m-4 overflow-hidden relative min-h-[300px] border border-gray-200">
             {!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white/50 text-lg px-6 text-center">
+                <span className="text-tertiary text-lg px-6 text-center">
                   ⚠️ Missing NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local
                 </span>
               </div>
             ) : mapLoadError ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white/50 text-lg px-6 text-center">
+                <span className="text-tertiary text-lg px-6 text-center">
                   ⚠️ Map failed to load — check API key restrictions
                 </span>
               </div>
             ) : !mapLoaded ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white/50 text-lg">Loading map…</span>
+                <span className="text-tertiary text-lg">Loading map…</span>
               </div>
             ) : (
               <GoogleMap
                 mapContainerStyle={{ width: '100%', height: '100%' }}
                 center={location || { lat: 28.6139, lng: 77.2090 }}
                 zoom={location ? 12 : 10}
-                options={{
-                  disableDefaultUI: false,
-                  zoomControl: true,
-                  styles: [
-                    { elementType: 'geometry', stylers: [{ color: '#1d2330' }] },
-                    { elementType: 'labels.text.stroke', stylers: [{ color: '#1d2330' }] },
-                    { elementType: 'labels.text.fill', stylers: [{ color: '#8ec3b9' }] },
-                  ],
-                }}
+                  options={{
+                    disableDefaultUI: false,
+                    zoomControl: true,
+                  }}
               >
                 {location && (
                   <Marker
@@ -577,67 +571,53 @@ export default function AmbulanceDashboard() {
           </div>
           {directionsUnavailable && (
             <div className="px-4 pb-2">
-              <p className="text-xs text-white/40 text-center">
+              <p className="text-xs text-tertiary text-center">
                 📍 Estimated distance shown — live routing temporarily unavailable
               </p>
             </div>
           )}
           {activeAlert && activeHospital ? (
-            <div className="p-4 border-t border-white/10">
-              <h3 className="text-2xl font-black text-white mb-4">🚑 En Route To Hospital</h3>
+            <div className="p-4 border-t border-gray-200">
+              <h3 className="text-2xl font-bold text-primary mb-4">🚑 En Route To Hospital</h3>
               <GlassCard className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
-                    <p className="text-white/50 text-xs uppercase tracking-wide mb-1 font-bold">Hospital</p>
-                    <p className="text-white font-black text-xl">{activeHospital.name}</p>
-                    <p className="text-white/70 text-lg mt-1">{activeHospital.address}</p>
+                    <p className="text-tertiary text-xs uppercase tracking-wide mb-1 font-bold">Hospital</p>
+                    <p className="text-primary font-bold text-xl">{activeHospital.name}</p>
+                    <p className="text-secondary text-lg mt-1">{activeHospital.address}</p>
                   </div>
                   <div>
-                    <p className="text-white/50 text-xs uppercase tracking-wide mb-1 font-bold">Distance</p>
-                    <p className="text-white font-black text-xl">
+                    <p className="text-tertiary text-xs uppercase tracking-wide mb-1 font-bold">Distance</p>
+                    <p className="text-primary font-bold text-xl">
                       {directions
                         ? directions.routes[0]?.legs[0]?.distance?.text
                         : `${activeHospital.distance_km?.toFixed(1)} km`}
                     </p>
                     {directions && (
-                      <p className="text-white/70 text-lg mt-1">
+                      <p className="text-secondary text-lg mt-1">
                         ETA: {directions.routes[0]?.legs[0]?.duration?.text}
                       </p>
                     )}
                   </div>
                   <div>
-                    <p className="text-white/50 text-xs uppercase tracking-wide mb-1 font-bold">Hospital Contact</p>
-                    <p className="text-white font-black text-xl">
+                    <p className="text-tertiary text-xs uppercase tracking-wide mb-1 font-bold">Hospital Contact</p>
+                    <p className="text-primary font-bold text-xl">
                       {responderPhone ? (
-                        <a href={`tel:${responderPhone}`} className="text-green-400 hover:text-green-300">
+                        <a href={`tel:${responderPhone}`} className="text-green-600 hover:text-green-700">
                           {responderPhone}
                         </a>
                       ) : 'Not available'}
                     </p>
                   </div>
                   <div>
-                    <p className="text-white/50 text-xs uppercase tracking-wide mb-1 font-bold">Status</p>
-                    <span
-                      className={`inline-block px-4 py-2 rounded-full text-base font-bold border ${
-                        activeAlert.status === 'arrived'
-                          ? 'bg-green-500/20 text-green-300 border-green-400/30'
-                          : activeAlert.status === 'preparing'
-                          ? 'bg-blue-500/20 text-blue-300 border-blue-400/30'
-                          : 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30'
-                      }`}
-                    >
-                      {activeAlert.status === 'arrived'
-                        ? 'Arrived ✅'
-                        : activeAlert.status === 'preparing'
-                        ? 'Preparing 🔧'
-                        : 'Accepted ✅'}
-                    </span>
+                    <p className="text-tertiary text-xs uppercase tracking-wide mb-1 font-bold">Status</p>
+                    <StatusBadge status={activeAlert.status} />
                   </div>
                 </div>
                 <div className="flex gap-4">
                   <GlassButton
-                    variant="green"
-                    className="flex-1 py-4 text-xl font-black"
+                    variant="success"
+                    className="flex-1 py-4 text-lg font-bold"
                     onClick={() => {
                       if (activeHospital) {
                         window.open(`https://www.google.com/maps/dir/?api=1&destination=${activeHospital.lat},${activeHospital.lng}`, '_blank');
@@ -647,8 +627,8 @@ export default function AmbulanceDashboard() {
                     🗺️ Get Directions
                   </GlassButton>
                   <GlassButton
-                    variant="red"
-                    className="flex-1 py-4 text-xl font-black"
+                    variant="primary"
+                    className="flex-1 py-4 text-lg font-bold"
                     onClick={handleMarkArrived}
                   >
                     ✅ Mark Arrived
@@ -658,14 +638,14 @@ export default function AmbulanceDashboard() {
             </div>
           ) : (
             hospitals.length > 0 && (
-              <div className="p-4 border-t border-white/10">
-                <h3 className="text-lg font-bold text-white mb-4">Top Recommended Hospitals</h3>
+              <div className="p-4 border-t border-gray-200">
+                <h3 className="text-lg font-bold text-primary mb-4">Top Recommended Hospitals</h3>
                 <div className="grid grid-cols-2 gap-4">
                   {hospitals.slice(0, 4).map((hospital) => (
                     <div key={hospital.id} className="relative">
                       <HospitalCard hospital={hospital} />
                       <GlassButton
-                        variant="green"
+                        variant="success"
                         className="w-full mt-2"
                         onClick={() => handleSendAlert(hospital)}
                       >

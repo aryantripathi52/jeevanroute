@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase, Alert, Hospital, InventoryItem, HospitalProfile, Case } from '@/lib/supabase'
+import { supabase, Alert, Hospital, InventoryItem, Case } from '@/lib/supabase'
 import GlassCard from '@/components/GlassCard'
 import GlassButton from '@/components/GlassButton'
 import GlassNav from '@/components/GlassNav'
@@ -16,7 +16,7 @@ type AlertWithCase = Alert & {
 export default function HospitalDashboard() {
   const router = useRouter()
   
-  const [hospitalProfile, setHospitalProfile] = useState<HospitalProfile | null>(null)
+  const [hospitalProfile, setHospitalProfile] = useState<Hospital | null>(null)
   const [hospital, setHospital] = useState<Hospital | null>(null)
   const [activeTab, setActiveTab] = useState('Upcoming Requests')
   const [alerts, setAlerts] = useState<AlertWithCase[]>([])
@@ -57,7 +57,6 @@ export default function HospitalDashboard() {
         setHospital(hosp)
         await loadAlerts(profile.hospital_id)
         await loadInventory(profile.hospital_id)
-        // Remove previous channel if exists
         if (channelRef.current) {
           await supabase.removeChannel(channelRef.current)
         }
@@ -68,7 +67,6 @@ export default function HospitalDashboard() {
     }
     init()
 
-    // Cleanup function
     return () => {
       if (channelRef.current) {
         supabase.removeChannel(channelRef.current)
@@ -165,7 +163,7 @@ export default function HospitalDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white">
+      <div className="min-h-screen flex items-center justify-center text-primary bg-primary">
         Loading...
       </div>
     )
@@ -175,18 +173,18 @@ export default function HospitalDashboard() {
   const acceptedAlerts = alerts.filter(a => ['accepted', 'preparing', 'arrived'].includes(a.status))
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-secondary">
       <GlassNav>
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-2xl">
+            <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-2xl">
               🏥
             </div>
-            <span className="text-white font-bold text-lg">{hospital?.name}</span>
+            <span className="text-primary font-bold text-lg">{hospital?.name}</span>
           </div>
           <div className="flex items-center gap-6">
-            <button className="text-white/80 hover:text-white">Hospital Profile</button>
-            <button onClick={handleLogout} className="text-white/80 hover:text-white">Logout</button>
+            <button className="text-secondary hover:text-primary font-medium">Hospital Profile</button>
+            <button onClick={handleLogout} className="text-secondary hover:text-primary font-medium">Logout</button>
           </div>
         </div>
       </GlassNav>
@@ -196,12 +194,11 @@ export default function HospitalDashboard() {
       </div>
 
       <div className="px-4 pb-4">
-        {/* Tab 1: Upcoming Requests */}
         {activeTab === 'Upcoming Requests' && (
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-white">Incoming Alerts</h2>
+            <h2 className="text-xl font-bold text-primary">Incoming Alerts</h2>
             {pendingAlerts.length === 0 ? (
-              <GlassCard className="p-8 text-center text-white/60">
+              <GlassCard className="p-8 text-center text-secondary">
                 No incoming alerts
               </GlassCard>
             ) : (
@@ -209,27 +206,27 @@ export default function HospitalDashboard() {
                 <GlassCard key={alert.id} className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h3 className="text-lg font-bold text-white flex items-center gap-3">
+                      <h3 className="text-lg font-bold text-primary flex items-center gap-3">
                         {alert.cases?.patient_condition || 'Unknown'} Emergency
                         <StatusBadge status={getSeverityLabel(alert.cases?.severity || 5)} />
                       </h3>
-                      <p className="text-white/70 mt-1">
+                      <p className="text-secondary mt-1">
                         Age: {alert.cases?.age} · Blood Group: {alert.cases?.blood_group}
                       </p>
                     </div>
-                    <p className="text-white/60 text-sm">
+                    <p className="text-tertiary text-sm">
                       {new Date(alert.created_at).toLocaleTimeString()}
                     </p>
                   </div>
                   <div className="flex gap-4">
                     <GlassButton
-                      variant="green"
+                      variant="success"
                       onClick={() => handleAcceptAlert(alert)}
                     >
                       ✅ Accept
                     </GlassButton>
                     <GlassButton
-                      variant="red"
+                      variant="danger"
                       onClick={() => handleDeclineAlert(alert)}
                     >
                       ❌ Decline
@@ -241,36 +238,35 @@ export default function HospitalDashboard() {
           </div>
         )}
 
-        {/* Tab 2: Accept Request */}
         {activeTab === 'Accept Request' && (
           <div>
             {acceptedAlert ? (
               <GlassCard className="p-8">
-                <h2 className="text-xl font-bold text-white mb-6">Active Case</h2>
-                <div className="mb-6">
-                  <p className="text-white/80 mb-2">
-                    <strong>Condition:</strong> {acceptedAlert.cases.patient_condition}
+                <h2 className="text-xl font-bold text-primary mb-6">Active Case</h2>
+                <div className="mb-6 space-y-2">
+                  <p className="text-secondary">
+                    <strong className="text-primary">Condition:</strong> {acceptedAlert.cases.patient_condition}
                   </p>
-                  <p className="text-white/80 mb-2">
-                    <strong>Severity:</strong> {acceptedAlert.cases.severity}
+                  <p className="text-secondary">
+                    <strong className="text-primary">Severity:</strong> {acceptedAlert.cases.severity}
                   </p>
-                  <p className="text-white/80 mb-2">
-                    <strong>Age:</strong> {acceptedAlert.cases.age}
+                  <p className="text-secondary">
+                    <strong className="text-primary">Age:</strong> {acceptedAlert.cases.age}
                   </p>
-                  <p className="text-white/80">
-                    <strong>Blood Group:</strong> {acceptedAlert.cases.blood_group}
+                  <p className="text-secondary">
+                    <strong className="text-primary">Blood Group:</strong> {acceptedAlert.cases.blood_group}
                   </p>
                 </div>
                 <div className="flex gap-4">
                   <GlassButton
-                    variant="blue"
+                    variant="info"
                     onClick={() => handleUpdateAlertStatus(acceptedAlert.id, 'preparing')}
                     disabled={acceptedAlert.status === 'preparing' || acceptedAlert.status === 'arrived'}
                   >
-                    🔧 {acceptedAlert.status === 'preparing' ? 'Preparing…' : 'Mark Preparing'}
+                    🔧 {acceptedAlert.status === 'preparing' ? 'Preparing...' : 'Mark Preparing'}
                   </GlassButton>
                   <GlassButton
-                    variant="green"
+                    variant="success"
                     onClick={() => handleUpdateAlertStatus(acceptedAlert.id, 'arrived')}
                     disabled={acceptedAlert.status === 'arrived'}
                   >
@@ -279,19 +275,18 @@ export default function HospitalDashboard() {
                 </div>
               </GlassCard>
             ) : (
-              <GlassCard className="p-8 text-center text-white/60">
+              <GlassCard className="p-8 text-center text-secondary">
                 No active case accepted yet
               </GlassCard>
             )}
           </div>
         )}
 
-        {/* Tab 3: Prepared / Arrived */}
         {activeTab === 'Prepared / Arrived' && (
           <div className="space-y-4">
-            <h2 className="text-xl font-bold text-white">Prepared / Arrived Cases</h2>
+            <h2 className="text-xl font-bold text-primary">Prepared / Arrived Cases</h2>
             {acceptedAlerts.length === 0 ? (
-              <GlassCard className="p-8 text-center text-white/60">
+              <GlassCard className="p-8 text-center text-secondary">
                 No cases yet
               </GlassCard>
             ) : (
@@ -299,22 +294,14 @@ export default function HospitalDashboard() {
                 <GlassCard key={alert.id} className="p-6">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="text-lg font-bold text-white">
+                      <h3 className="text-lg font-bold text-primary">
                         {alert.cases?.patient_condition}
                       </h3>
-                      <p className="text-white/70 mt-1">
+                      <p className="text-secondary mt-1">
                         Accepted at: {new Date(alert.created_at).toLocaleString()}
                       </p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
-                      alert.status === 'arrived'
-                        ? 'bg-green-500/20 text-green-300 border-green-400/30'
-                        : alert.status === 'preparing'
-                        ? 'bg-blue-500/20 text-blue-300 border-blue-400/30'
-                        : 'bg-white/10 text-white/70 border-white/20'
-                    }`}>
-                      {alert.status === 'arrived' ? 'Arrived ✅' : alert.status === 'preparing' ? 'Preparing 🔄' : 'Accepted'}
-                    </span>
+                    <StatusBadge status={alert.status} />
                   </div>
                   <div className="mt-4">
                     <GlassButton>Completed</GlassButton>
@@ -325,39 +312,38 @@ export default function HospitalDashboard() {
           </div>
         )}
 
-        {/* Tab 4: Inventory */}
         {activeTab === 'Inventory' && (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-white">Inventory Management</h2>
-              <GlassButton variant="green" onClick={handleAddInventoryItem}>
+              <h2 className="text-xl font-bold text-primary">Inventory Management</h2>
+              <GlassButton variant="success" onClick={handleAddInventoryItem}>
                 + Add Item
               </GlassButton>
             </div>
             <GlassCard className="p-6">
               <div className="space-y-4">
                 {inventory.length === 0 ? (
-                  <p className="text-white/60">No inventory items yet</p>
+                  <p className="text-secondary">No inventory items yet</p>
                 ) : (
                   inventory.map((item) => (
-                    <div key={item.id} className="flex items-center gap-4 border-b border-white/10 pb-4 last:border-0 last:pb-0">
+                    <div key={item.id} className="flex items-center gap-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0">
                       <input
                         type="text"
                         value={item.item_name}
                         onChange={(e) => handleUpdateInventoryItem(item.id, { item_name: e.target.value })}
-                        className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none"
+                        className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-lg text-primary focus:outline-none focus:border-red-500 focus:ring-3 focus:ring-red-50"
                       />
                       <input
                         type="number"
                         value={item.quantity}
                         onChange={(e) => handleUpdateInventoryItem(item.id, { quantity: parseInt(e.target.value) || 0 })}
-                        className="w-24 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none"
+                        className="w-24 px-4 py-2 bg-white border border-gray-200 rounded-lg text-primary focus:outline-none focus:border-red-500 focus:ring-3 focus:ring-red-50"
                       />
                       <input
                         type="text"
                         value={item.unit}
                         onChange={(e) => handleUpdateInventoryItem(item.id, { unit: e.target.value })}
-                        className="w-24 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none"
+                        className="w-24 px-4 py-2 bg-white border border-gray-200 rounded-lg text-primary focus:outline-none focus:border-red-500 focus:ring-3 focus:ring-red-50"
                       />
                     </div>
                   ))

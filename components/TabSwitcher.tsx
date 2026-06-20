@@ -8,15 +8,15 @@ export default function TabSwitcher({
   setActiveTab: (tab: string) => void
 }) {
   return (
-    <div className="flex gap-2 p-1 glass-card">
+    <div className="flex gap-1 border-b border-gray-200">
       {tabs.map((tab) => (
         <button
           key={tab}
           onClick={() => setActiveTab(tab)}
-          className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+          className={`py-3 px-6 font-medium transition-all ${
             activeTab === tab
-              ? 'bg-white/20 text-white'
-              : 'text-white/60 hover:text-white/80'
+              ? 'border-b-2 border-red-500 text-red-500'
+              : 'text-gray-500 hover:text-black'
           }`}
         >
           {tab}
