@@ -1,9 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 export type Hospital = {
   id: string
@@ -15,6 +15,12 @@ export type Hospital = {
   icu_available: boolean
   available_beds: number
   blood_types_available: string[]
+}
+
+export type ScoredHospital = Hospital & {
+  score: number
+  distance_km: number
+  eta_minutes: number
 }
 
 export type Case = {
@@ -39,10 +45,11 @@ export type Alert = {
   id: string
   case_id: string
   hospital_id: string
-  status: 'pending' | 'accepted' | 'declined'
+  status: 'pending' | 'accepted' | 'declined' | 'preparing' | 'arrived'
   decline_reason: string | null
   created_at: string
   responded_at: string | null
+  responded_by: string | null
 }
 
 export type TriageResult = {
@@ -51,4 +58,33 @@ export type TriageResult = {
   equipment_needed: string[]
   blood_required: string
   prep_instructions: string[]
+}
+
+export type HospitalProfile = {
+  id: string
+  user_id: string
+  hospital_id: string | null
+  name: string
+  role: string
+  phone: string
+  created_at: string
+}
+
+export type OperatorProfile = {
+  id: string
+  user_id: string
+  operator_name: string
+  vehicle_number: string
+  phone: string
+  license_number: string
+  created_at: string
+}
+
+export type InventoryItem = {
+  id: string
+  hospital_id: string
+  item_name: string
+  quantity: number
+  unit: string
+  updated_at: string
 }

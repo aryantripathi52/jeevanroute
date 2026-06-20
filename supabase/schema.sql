@@ -173,3 +173,8 @@ insert into hospitals (name, address, lat, lng, specialties, icu_available, avai
   true, 13,
   ARRAY['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']
 );
+
+-- Disable Row Level Security on all tables for rapid prototyping / hackathon demo simplicity
+alter table hospitals disable row level security;
+alter table cases disable row level security;
+alter table alerts disable row level security;
