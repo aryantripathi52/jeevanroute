@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { GoogleMap, Marker, DirectionsRenderer, useJsApiLoader } from '@react-google-maps/api'
 import { supabase, ScoredHospital, Hospital, TriageResult, Alert } from '@/lib/supabase'
+import { Map, type MapRef, MapMarker, MapControls, MarkerContent, MapRoute } from '@/components/ui/map'
 import GlassCard from '@/components/GlassCard'
 import GlassButton from '@/components/GlassButton'
 import GlassNav from '@/components/GlassNav'
@@ -22,17 +22,20 @@ const CONDITIONS = [
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']
 
+const MAP_STYLES = {
+  default: undefined,
+  openstreetmap: 'https://tiles.openfreemap.org/styles/bright',
+  openstreetmap3d: 'https://tiles.openfreemap.org/styles/liberty',
+}
+type StyleKey = keyof typeof MAP_STYLES;
+
 const MAP_LIBRARIES: ('places' | 'geometry')[] = []
 
 export default function AmbulanceDashboard() {
   const router = useRouter()
 
-  const { isLoaded: mapLoaded, loadError: mapLoadError } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries: MAP_LIBRARIES,
-  })
-  
+  const mapRef = useRef<MapRef>(null)
+
   const [operatorProfile, setOperatorProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -54,8 +57,23 @@ export default function AmbulanceDashboard() {
   const [activeAlert, setActiveAlert] = useState<Alert | null>(null)
   const [activeHospital, setActiveHospital] = useState<ScoredHospital | null>(null)
   const [responderPhone, setResponderPhone] = useState<string | null>(null)
-  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null)
   const [directionsUnavailable, setDirectionsUnavailable] = useState(false)
+
+  const [routeCoords, setRouteCoords] = useState<[number, number][]>([])
+  const [routeDuration, setRouteDuration] = useState<string>('')
+
+  const [mapStyle, setMapStyle] = useState<StyleKey>('default')
+  const selectedStyle = MAP_STYLES[mapStyle]
+
+  // Tilt/ease camera pitch when style is 3D
+  useEffect(() => {
+    const map = mapRef.current
+    if (map) {
+      map.easeTo({ pitch: mapStyle === 'openstreetmap3d' ? 60 : 0, duration: 500 })
+    }
+  }, [mapStyle])
+
+
 
   useEffect(() => {
     const checkProfile = async () => {
@@ -142,40 +160,80 @@ export default function AmbulanceDashboard() {
     }
   }, [caseId, hospitals.length])
 
-  // Fetch turn-by-turn directions once a hospital accepts
+  // Fetch turn-by-turn directions via OSRM once a hospital accepts
   useEffect(() => {
-    if (!mapLoaded || !location || !activeHospital) {
-      setDirections(null)
+    if (!location || !activeHospital) {
+      setRouteCoords([])
+      setRouteDuration('')
       setDirectionsUnavailable(false)
       return
     }
 
-    try {
-      const directionsService = new google.maps.DirectionsService()
-      directionsService.route(
-        {
-          origin: location,
-          destination: { lat: activeHospital.lat, lng: activeHospital.lng },
-          travelMode: google.maps.TravelMode.DRIVING,
-        },
-        (result, status) => {
-          if (status === google.maps.DirectionsStatus.OK && result) {
-            setDirections(result)
-            setDirectionsUnavailable(false)
-          } else {
-            // Handle directions errors gracefully without spamming console
-            setDirections(null)
-            setDirectionsUnavailable(true)
-            console.log('Directions unavailable (check Google Maps API key/billing)')
+    const fetchOSRMRoute = async () => {
+      try {
+        const res = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${location.lng},${location.lat};${activeHospital.lng},${activeHospital.lat}?overview=full&geometries=geojson`
+        )
+        const data = await res.json()
+        if (data.routes && data.routes[0]) {
+          setRouteCoords(data.routes[0].geometry.coordinates)
+          const durSeconds = data.routes[0].duration
+          const mins = Math.round(durSeconds / 60)
+          setRouteDuration(`${mins} mins`)
+          setDirectionsUnavailable(false)
+
+          // Fit map bounds
+          const map = mapRef.current
+          if (map) {
+            const lats = [location.lat, activeHospital.lat]
+            const lngs = [location.lng, activeHospital.lng]
+            const minLat = Math.min(...lats)
+            const maxLat = Math.max(...lats)
+            const minLng = Math.min(...lngs)
+            const maxLng = Math.max(...lngs)
+            map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: 60, maxZoom: 15 })
           }
+        } else {
+          setRouteCoords([])
+          setRouteDuration('')
+          setDirectionsUnavailable(true)
         }
-      )
-    } catch (error) {
-      setDirections(null)
-      setDirectionsUnavailable(true)
-      console.log('Directions unavailable (check Google Maps API key/billing)')
+      } catch (error) {
+        setRouteCoords([])
+        setRouteDuration('')
+        setDirectionsUnavailable(true)
+        console.error('OSRM Routing failed:', error)
+      }
     }
-  }, [mapLoaded, location, activeHospital])
+
+    fetchOSRMRoute()
+  }, [location, activeHospital])
+
+  // Center/fit map on initial hospital suggestions
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !location || activeHospital) return
+
+    const lats = [location.lat]
+    const lngs = [location.lng]
+
+    hospitals.slice(0, 4).forEach((h) => {
+      if (h.lat && h.lng) {
+        lats.push(h.lat)
+        lngs.push(h.lng)
+      }
+    })
+
+    if (lats.length > 1) {
+      const minLat = Math.min(...lats)
+      const maxLat = Math.max(...lats)
+      const minLng = Math.min(...lngs)
+      const maxLng = Math.max(...lngs)
+      map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: 60, maxZoom: 15 })
+    } else {
+      map.flyTo({ center: [location.lng, location.lat], zoom: 12 })
+    }
+  }, [location, hospitals, activeHospital])
 
   const detectLocation = () => {
     setLocating(true)
@@ -344,7 +402,8 @@ export default function AmbulanceDashboard() {
       setActiveAlert(null)
       setActiveHospital(null)
       setResponderPhone(null)
-      setDirections(null)
+      setRouteCoords([])
+      setRouteDuration('')
       setCaseId(null)
       setHospitals([])
       setTriageResult(null)
@@ -503,75 +562,66 @@ export default function AmbulanceDashboard() {
         {/* Right Panel: Map & Hospitals */}
         <GlassCard className="flex-1 flex flex-col">
           <div className="flex-1 bg-gray-50 rounded-xl m-4 overflow-hidden relative min-h-[300px] border border-gray-200">
-            {!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-tertiary text-lg px-6 text-center">
-                  ⚠️ Missing NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local
-                </span>
-              </div>
-            ) : mapLoadError ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-tertiary text-lg px-6 text-center">
-                  ⚠️ Map failed to load — check API key restrictions
-                </span>
-              </div>
-            ) : !mapLoaded ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-tertiary text-lg">Loading map…</span>
-              </div>
-            ) : (
-              <GoogleMap
-                mapContainerStyle={{ width: '100%', height: '100%' }}
-                center={location || { lat: 28.6139, lng: 77.2090 }}
-                zoom={location ? 12 : 10}
-                options={{
-                  disableDefaultUI: false,
-                  zoomControl: true,
-                }}
+            <Map
+              ref={mapRef}
+              center={location ? [location.lng, location.lat] : [77.2090, 28.6139]}
+              zoom={location ? 12 : 10}
+              className="w-full h-full"
+              styles={selectedStyle ? { light: selectedStyle, dark: selectedStyle } : undefined}
+            >
+              {location && (
+                <MapMarker longitude={location.lng} latitude={location.lat}>
+                  <MarkerContent>
+                    <div className="relative flex items-center justify-center">
+                      <span className="absolute inline-flex h-6 w-6 rounded-full bg-brand-red/30 animate-ping" />
+                      <div className="relative bg-brand-red w-4.5 h-4.5 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
+                        <span className="text-[10px]">🚑</span>
+                      </div>
+                    </div>
+                  </MarkerContent>
+                </MapMarker>
+              )}
+              {activeAlert && activeHospital ? (
+                <>
+                  <MapMarker longitude={activeHospital.lng} latitude={activeHospital.lat}>
+                    <MarkerContent>
+                      <div className="w-5 h-5 rounded-full bg-emerald-500 border-2 border-white shadow-lg flex items-center justify-center text-[10px] font-bold text-white">
+                        🏥
+                      </div>
+                    </MarkerContent>
+                  </MapMarker>
+                  {routeCoords && routeCoords.length > 0 && (
+                    <MapRoute coordinates={routeCoords} color="#22C55E" width={5} />
+                  )}
+                </>
+              ) : (
+                hospitals.map((h: any) =>
+                  h.lat && h.lng ? (
+                    <MapMarker key={h.id} longitude={h.lng} latitude={h.lat}>
+                      <MarkerContent>
+                        <div className="w-5 h-5 rounded-full bg-blue-500 border-2 border-white shadow-lg flex items-center justify-center text-[10px] font-bold text-white">
+                          🏥
+                        </div>
+                      </MarkerContent>
+                    </MapMarker>
+                  ) : null
+                )
+              )}
+              <MapControls position="bottom-right" showZoom showCompass showLocate showFullscreen />
+            </Map>
+
+            {/* Map Style Selector */}
+            <div className="absolute top-3 right-3 z-10 flex gap-2">
+              <select
+                value={mapStyle}
+                onChange={(e) => setMapStyle(e.target.value as StyleKey)}
+                className="bg-brand-navy-dark/95 text-white border border-white/10 rounded px-2.5 py-1 text-[10px] font-mono shadow-md focus:outline-none focus:border-brand-red cursor-pointer"
               >
-                {location && (
-                  <Marker
-                    position={location}
-                    icon={{
-                      path: window.google.maps.SymbolPath.CIRCLE,
-                      scale: 9,
-                      fillColor: '#EF4444',
-                      fillOpacity: 1,
-                      strokeColor: '#ffffff',
-                      strokeWeight: 2,
-                    }}
-                    title="Ambulance (your location)"
-                  />
-                )}
-                {activeAlert && activeHospital ? (
-                  <>
-                    <Marker
-                      position={{ lat: activeHospital.lat, lng: activeHospital.lng }}
-                      title={activeHospital.name}
-                    />
-                    {directions && (
-                      <DirectionsRenderer
-                        directions={directions}
-                        options={{
-                          suppressMarkers: true,
-                          polylineOptions: { strokeColor: '#22C55E', strokeWeight: 5 },
-                        }}
-                      />
-                    )}
-                  </>
-                ) : (
-                  hospitals.map((hospital: any) =>
-                    hospital.lat && hospital.lng ? (
-                      <Marker
-                        key={hospital.id}
-                        position={{ lat: hospital.lat, lng: hospital.lng }}
-                        title={hospital.name}
-                      />
-                    ) : null
-                  )
-                )}
-              </GoogleMap>
-            )}
+                <option value="default">🛰️ CARTODB DARK</option>
+                <option value="openstreetmap">🗺️ OSM BRIGHT</option>
+                <option value="openstreetmap3d">🏙️ OSM 3D LIBERTY</option>
+              </select>
+            </div>
           </div>
           {directionsUnavailable && (
             <div className="px-4 pb-2">
@@ -593,13 +643,11 @@ export default function AmbulanceDashboard() {
                   <div>
                     <p className="text-tertiary text-xs uppercase tracking-wide mb-1 font-bold">Distance</p>
                     <p className="text-primary font-bold text-xl">
-                      {directions
-                        ? directions.routes[0]?.legs[0]?.distance?.text
-                        : `${activeHospital.distance_km?.toFixed(1)} km`}
+                      {`${activeHospital.distance_km?.toFixed(1)} km`}
                     </p>
-                    {directions && (
+                    {routeDuration && (
                       <p className="text-secondary text-lg mt-1">
-                        ETA: {directions.routes[0]?.legs[0]?.duration?.text}
+                        ETA: {routeDuration}
                       </p>
                     )}
                   </div>

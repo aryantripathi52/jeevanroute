@@ -4,13 +4,14 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase, Case, Alert, ScoredHospital } from '@/lib/supabase'
 import Link from 'next/link'
+import { Map, type MapRef, MapMarker, MapControls, MarkerContent, MapRoute } from '@/components/ui/map'
 
-declare global {
-  interface Window {
-    google: typeof google
-    initMap: () => void
-  }
+const MAP_STYLES = {
+  default: undefined,
+  openstreetmap: 'https://tiles.openfreemap.org/styles/bright',
+  openstreetmap3d: 'https://tiles.openfreemap.org/styles/liberty',
 }
+type StyleKey = keyof typeof MAP_STYLES;
 
 type ToastMessage = { id: string; type: 'error' | 'success' | 'info'; message: string }
 
@@ -183,11 +184,21 @@ export default function ResultsPage() {
   const [loading, setLoading] = useState(true)
   const [newHospitalIds, setNewHospitalIds] = useState<Set<string>>(new Set())
   const [responderPhone, setResponderPhone] = useState<string | null>(null)
-  const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstance = useRef<google.maps.Map | null>(null)
-  const markersRef = useRef<google.maps.Marker[]>([])
-  const routeRef = useRef<google.maps.DirectionsRenderer | null>(null)
+  const mapRef = useRef<MapRef>(null)
   const locationRef = useRef<{ lat: number; lng: number } | null>(null)
+  const [routeCoords, setRouteCoords] = useState<[number, number][]>([])
+  const [routeDuration, setRouteDuration] = useState<string>('')
+
+  const [mapStyle, setMapStyle] = useState<StyleKey>('default')
+  const selectedStyle = MAP_STYLES[mapStyle]
+
+  // Tilt/ease camera pitch when style is 3D
+  useEffect(() => {
+    const map = mapRef.current
+    if (map) {
+      map.easeTo({ pitch: mapStyle === 'openstreetmap3d' ? 60 : 0, duration: 500 })
+    }
+  }, [mapStyle])
 
   const addToast = useCallback((type: ToastMessage['type'], message: string) => {
     const t = { id: Date.now().toString(), type, message }
@@ -195,107 +206,69 @@ export default function ResultsPage() {
     setTimeout(() => setToasts((prev) => prev.filter((x) => x.id !== t.id)), 6000)
   }, [])
 
-  // Load Google Maps
+  // Center/fit map on case location and recommendations
   useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-    if (!apiKey || apiKey === 'your_google_maps_api_key') return
+    const map = mapRef.current
+    if (!map || !caseData) return
 
-    if (window.google) { initMap(); return }
+    const lats = [caseData.current_lat || caseData.pickup_lat]
+    const lngs = [caseData.current_lng || caseData.pickup_lng]
 
-    window.initMap = initMap
-    const script = document.createElement('script')
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap&libraries=directions`
-    script.async = true
-    document.head.appendChild(script)
-
-    return () => { document.head.removeChild(script) }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  function initMap() {
-    if (!mapRef.current) return
-    mapInstance.current = new window.google.maps.Map(mapRef.current, {
-      zoom: 12,
-      center: { lat: 28.567, lng: 77.21 },
-      styles: [
-        { elementType: 'geometry', stylers: [{ color: '#0A0F1E' }] },
-        { elementType: 'labels.text.stroke', stylers: [{ color: '#0A0F1E' }] },
-        { elementType: 'labels.text.fill', stylers: [{ color: '#9CA3AF' }] },
-        { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1F2937' }] },
-        { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#111827' }] },
-        { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-        { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-      ],
-    })
-    routeRef.current = new window.google.maps.DirectionsRenderer({
-      suppressMarkers: true,
-      polylineOptions: { strokeColor: '#EF4444', strokeWeight: 4 },
-    })
-    routeRef.current.setMap(mapInstance.current)
-  }
-
-  const updateMap = useCallback((loc: { lat: number; lng: number }, hs: ScoredHospital[]) => {
-    if (!mapInstance.current || !window.google) return
-
-    // Clear existing markers
-    markersRef.current.forEach((m) => m.setMap(null))
-    markersRef.current = []
-
-    // Ambulance marker
-    const ambMarker = new window.google.maps.Marker({
-      position: loc,
-      map: mapInstance.current,
-      title: 'Ambulance',
-      icon: {
-        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
-            <circle cx="20" cy="20" r="18" fill="#EF4444" stroke="white" stroke-width="2"/>
-            <text x="20" y="27" text-anchor="middle" font-size="18">🚑</text>
-          </svg>`),
-        scaledSize: new window.google.maps.Size(40, 40),
+    hospitals.slice(0, 3).forEach((h) => {
+      if (h.lat && h.lng) {
+        lats.push(h.lat)
+        lngs.push(h.lng)
       }
     })
-    markersRef.current.push(ambMarker)
 
-    // Hospital markers
-    hs.slice(0, 3).forEach((h, i) => {
-      const colors = ['#EF4444', '#EAB308', '#22C55E']
-      const marker = new window.google.maps.Marker({
-        position: { lat: h.lat, lng: h.lng },
-        map: mapInstance.current!,
-        title: h.name,
-        icon: {
-          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-            <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
-              <circle cx="18" cy="18" r="16" fill="${colors[i]}" stroke="white" stroke-width="2"/>
-              <text x="18" y="24" text-anchor="middle" font-size="14" fill="white" font-weight="bold">${i + 1}</text>
-            </svg>`),
-          scaledSize: new window.google.maps.Size(36, 36),
-        }
-      })
-      markersRef.current.push(marker)
-    })
+    if (lats.length > 1) {
+      const minLat = Math.min(...lats)
+      const maxLat = Math.max(...lats)
+      const minLng = Math.min(...lngs)
+      const maxLng = Math.max(...lngs)
+      map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: 60, maxZoom: 15 })
+    } else {
+      map.flyTo({ center: [lngs[0], lats[0]], zoom: 12 })
+    }
+  }, [caseData, hospitals])
 
-    // Draw route to hospital #1
-    if (hs.length > 0 && routeRef.current) {
-      const ds = new window.google.maps.DirectionsService()
-      ds.route({
-        origin: loc,
-        destination: { lat: hs[0].lat, lng: hs[0].lng },
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      }, (result, status) => {
-        if (status === 'OK' && result) {
-          routeRef.current!.setDirections(result)
-        }
-      })
+  // Fetch OSRM route to hospital #1
+  useEffect(() => {
+    if (!caseData || hospitals.length === 0) {
+      setRouteCoords([])
+      setRouteDuration('')
+      return
     }
 
-    // Fit bounds
-    const bounds = new window.google.maps.LatLngBounds()
-    bounds.extend(loc)
-    hs.slice(0, 3).forEach((h) => bounds.extend({ lat: h.lat, lng: h.lng }))
-    mapInstance.current.fitBounds(bounds, 60)
-  }, [])
+    const startLng = caseData.current_lng || caseData.pickup_lng
+    const startLat = caseData.current_lat || caseData.pickup_lat
+    const endLng = hospitals[0].lng
+    const endLat = hospitals[0].lat
+
+    const fetchOSRMRoute = async () => {
+      try {
+        const res = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`
+        )
+        const data = await res.json()
+        if (data.routes && data.routes[0]) {
+          setRouteCoords(data.routes[0].geometry.coordinates)
+          const durSeconds = data.routes[0].duration
+          const mins = Math.round(durSeconds / 60)
+          setRouteDuration(`${mins} mins`)
+        } else {
+          setRouteCoords([])
+          setRouteDuration('')
+        }
+      } catch (error) {
+        console.error('OSRM Routing failed:', error)
+        setRouteCoords([])
+        setRouteDuration('')
+      }
+    }
+
+    fetchOSRMRoute()
+  }, [caseData, hospitals])
 
   // Fetch initial data
   useEffect(() => {
@@ -315,7 +288,6 @@ export default function ResultsPage() {
       })
       const { hospitals: hs } = await res.json()
       setHospitals(hs || [])
-      if (hs && locationRef.current) updateMap(locationRef.current, hs)
 
       // Check existing alert
       const { data: alerts } = await supabase
@@ -334,7 +306,7 @@ export default function ResultsPage() {
     }
 
     fetchData()
-  }, [id, updateMap])
+  }, [id])
 
   // Real-time subscription on alerts
   useEffect(() => {
@@ -420,7 +392,6 @@ export default function ResultsPage() {
         setNewHospitalIds(new Set([data.hospital?.id]))
         setHospitals(data.hospitals)
         setAlertSent(true)
-        if (locationRef.current) updateMap(locationRef.current, data.hospitals)
         addToast('success', `✅ Redirected to ${data.hospital?.name} — ETA: ${data.hospital?.eta_minutes} min`)
       }
     } catch (err) {
@@ -428,7 +399,7 @@ export default function ResultsPage() {
     } finally {
       setRerouting(false)
     }
-  }, [id, rerouting, addToast, updateMap])
+  }, [id, rerouting, addToast])
 
   const sendAlert = async (hospital: ScoredHospital) => {
     setAlertSent(true)
@@ -637,23 +608,62 @@ export default function ResultsPage() {
 
         {/* Right panel — Map */}
         <div className="flex-1 relative min-h-64">
-          <div ref={mapRef} className="absolute inset-0" />
-          {(!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY === 'your_google_maps_api_key') && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ background: '#111827' }}>
-              <div className="text-5xl mb-4">🗺️</div>
-              <p className="text-sm" style={{ color: '#9CA3AF' }}>Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to enable map</p>
-              <div className="mt-6 grid grid-cols-1 gap-2 w-48">
-                {hospitals.slice(0, 3).map((h, i) => (
-                  <div key={h.id} className="flex items-center gap-2 text-xs" style={{ color: '#9CA3AF' }}>
-                    <span className="w-5 h-5 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                      style={{ background: ['#EF4444', '#EAB308', '#22C55E'][i] }}>
-                      {i + 1}
-                    </span>
-                    {h.name.split(' ').slice(0, 2).join(' ')}
-                  </div>
-                ))}
+          {caseData && (
+            <>
+              <Map
+                ref={mapRef}
+                center={[caseData.current_lng || caseData.pickup_lng || 77.2090, caseData.current_lat || caseData.pickup_lat || 28.6139]}
+                zoom={12}
+                className="absolute inset-0 w-full h-full"
+                styles={selectedStyle ? { light: selectedStyle, dark: selectedStyle } : undefined}
+              >
+                <MapMarker
+                  longitude={caseData.current_lng || caseData.pickup_lng}
+                  latitude={caseData.current_lat || caseData.pickup_lat}
+                >
+                  <MarkerContent>
+                    <div className="relative flex items-center justify-center">
+                      <span className="absolute inline-flex h-6 w-6 rounded-full bg-brand-red/30 animate-ping" />
+                      <div className="relative bg-brand-red w-4.5 h-4.5 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
+                        <span className="text-[10px]">🚑</span>
+                      </div>
+                    </div>
+                  </MarkerContent>
+                </MapMarker>
+
+                {hospitals.slice(0, 3).map((h, i) => {
+                  const colors = ['#EF4444', '#EAB308', '#22C55E']
+                  return (
+                    <MapMarker key={h.id} longitude={h.lng} latitude={h.lat}>
+                      <MarkerContent>
+                        <div className="w-6 h-6 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-xs font-bold text-white"
+                          style={{ background: colors[i] }}>
+                          {i + 1}
+                        </div>
+                      </MarkerContent>
+                    </MapMarker>
+                  )
+                })}
+
+                {routeCoords && routeCoords.length > 0 && (
+                  <MapRoute coordinates={routeCoords} color="#EF4444" width={5} />
+                )}
+                <MapControls position="bottom-right" showZoom showCompass showLocate showFullscreen />
+              </Map>
+
+              {/* Map Style Selector */}
+              <div className="absolute top-3 right-3 z-10 flex gap-2">
+                <select
+                  value={mapStyle}
+                  onChange={(e) => setMapStyle(e.target.value as StyleKey)}
+                  className="bg-brand-navy-dark/95 text-white border border-white/10 rounded px-2.5 py-1 text-[10px] font-mono shadow-md focus:outline-none focus:border-brand-red cursor-pointer"
+                >
+                  <option value="default">🛰️ CARTODB DARK</option>
+                  <option value="openstreetmap">🗺️ OSM BRIGHT</option>
+                  <option value="openstreetmap3d">🏙️ OSM 3D LIBERTY</option>
+                </select>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase, Alert, Case, Hospital } from '@/lib/supabase'
 import Link from 'next/link'
+import { Map, type MapRef, MapMarker, MarkerContent } from '@/components/ui/map'
 import { Suspense } from 'react'
 
 function ETACountdown({ minutes }: { minutes: number }) {
@@ -98,7 +99,22 @@ function IncomingAlertContent() {
   const [showDeclineModal, setShowDeclineModal] = useState(false)
   const [processing, setProcessing] = useState(false)
   const [loading, setLoading] = useState(true)
-  const mapRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<MapRef>(null)
+
+  // Center/fit map on hospital and ambulance
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !caseData || !hospital) return
+
+    const lats = [caseData.current_lat || caseData.pickup_lat, hospital.lat]
+    const lngs = [caseData.current_lng || caseData.pickup_lng, hospital.lng]
+
+    const minLat = Math.min(...lats)
+    const maxLat = Math.max(...lats)
+    const minLng = Math.min(...lngs)
+    const maxLng = Math.max(...lngs)
+    map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding: 40, maxZoom: 15 })
+  }, [caseData, hospital])
 
   useEffect(() => {
     if (!alertId) return
@@ -138,52 +154,7 @@ function IncomingAlertContent() {
     load()
   }, [alertId, hospitalId])
 
-  // Load mini map
-  useEffect(() => {
-    if (!caseData || !hospital || loading) return
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-    if (!apiKey || apiKey === 'your_google_maps_api_key') return
-
-    const loadMap = () => {
-      if (!mapRef.current || !window.google) return
-      const map = new window.google.maps.Map(mapRef.current, {
-        zoom: 12,
-        center: { lat: caseData.current_lat || caseData.pickup_lat, lng: caseData.current_lng || caseData.pickup_lng },
-        styles: [
-          { elementType: 'geometry', stylers: [{ color: '#F8FAFC' }] },
-          { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#E2E8F0' }] },
-          { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-        ],
-        disableDefaultUI: true,
-      })
-      new window.google.maps.Marker({
-        position: { lat: caseData.current_lat || caseData.pickup_lat, lng: caseData.current_lng || caseData.pickup_lng },
-        map,
-        icon: {
-          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#EF4444" stroke="white" stroke-width="2"/><text x="16" y="21" text-anchor="middle" font-size="14">🚑</text></svg>`),
-          scaledSize: new window.google.maps.Size(32, 32),
-        }
-      })
-      new window.google.maps.Marker({
-        position: { lat: hospital.lat, lng: hospital.lng },
-        map,
-        icon: {
-          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#2563EB" stroke="white" stroke-width="2"/><text x="16" y="21" text-anchor="middle" font-size="14">🏥</text></svg>`),
-          scaledSize: new window.google.maps.Size(32, 32),
-        }
-      })
-    }
-
-    if (window.google) { loadMap() } else {
-      window.initMap = loadMap
-      if (!document.querySelector('script[src*="maps.googleapis.com"]')) {
-        const script = document.createElement('script')
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initMap`
-        script.async = true
-        document.head.appendChild(script)
-      }
-    }
-  }, [caseData, hospital, loading])
+  // Removed mini map script loader effect
 
   const handleAccept = async () => {
     if (!alertId || processing) return
@@ -283,13 +254,45 @@ function IncomingAlertContent() {
 
       {/* Mini map */}
       <div className="rounded-2xl overflow-hidden" style={{ height: '180px', border: '1px solid #E2E8F0' }}>
-        <div ref={mapRef} className="w-full h-full" style={{ background: '#F1F5F9' }}>
-          {(!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY === 'your_google_maps_api_key') && (
-            <div className="flex items-center justify-center h-full" style={{ color: '#94A3B8' }}>
-              <span className="text-sm">🗺️ Map requires Google Maps API key</span>
-            </div>
-          )}
-        </div>
+        {caseData && (
+          <Map
+            ref={mapRef}
+            center={[
+              caseData.current_lng || caseData.pickup_lng || 77.2090,
+              caseData.current_lat || caseData.pickup_lat || 28.6139
+            ]}
+            zoom={12}
+            className="w-full h-full"
+          >
+            {(caseData.current_lng || caseData.pickup_lng) && (caseData.current_lat || caseData.pickup_lat) && (
+              <MapMarker
+                longitude={caseData.current_lng || caseData.pickup_lng}
+                latitude={caseData.current_lat || caseData.pickup_lat}
+              >
+                <MarkerContent>
+                  <div className="relative flex items-center justify-center">
+                    <span className="absolute inline-flex h-6 w-6 rounded-full bg-brand-red/30 animate-ping" />
+                    <div className="relative bg-brand-red w-4.5 h-4.5 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
+                      <span className="text-[10px]">🚑</span>
+                    </div>
+                  </div>
+                </MarkerContent>
+              </MapMarker>
+            )}
+            {hospital?.lng && hospital?.lat && (
+              <MapMarker
+                longitude={hospital.lng}
+                latitude={hospital.lat}
+              >
+                <MarkerContent>
+                  <div className="w-5 h-5 rounded-full bg-blue-500 border-2 border-white shadow-lg flex items-center justify-center text-[10px] font-bold text-white">
+                    🏥
+                  </div>
+                </MarkerContent>
+              </MapMarker>
+            )}
+          </Map>
+        )}
       </div>
 
       {/* Accept / Decline buttons */}
