@@ -9,6 +9,7 @@ import GlassButton from '@/components/GlassButton'
 import StatusBadge from '@/components/StatusBadge'
 import HospitalCard from '@/components/HospitalCard'
 import Link from 'next/link'
+import { Activity, ShieldAlert, Heart, Siren, Compass, Navigation, Phone, ChevronRight } from 'lucide-react'
 
 const CONDITIONS = [
   { id: 'Cardiac', label: 'Cardiac', icon: '❤️' },
@@ -20,6 +21,87 @@ const CONDITIONS = [
 ]
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']
+
+const darkMapStyle = [
+  { elementType: "geometry", stylers: [{ color: "#0f172a" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#0f172a" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#94a3b8" }] },
+  {
+    featureType: "administrative.locality",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#cbd5e1" }],
+  },
+  {
+    featureType: "poi",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#94a3b8" }],
+  },
+  {
+    featureType: "poi.park",
+    elementType: "geometry",
+    stylers: [{ color: "#022e37" }],
+  },
+  {
+    featureType: "poi.park",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#306e73" }],
+  },
+  {
+    featureType: "road",
+    elementType: "geometry",
+    stylers: [{ color: "#1e293b" }],
+  },
+  {
+    featureType: "road",
+    elementType: "geometry.stroke",
+    stylers: [{ color: "#334155" }],
+  },
+  {
+    featureType: "road",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#64748b" }],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry",
+    stylers: [{ color: "#0f172a" }],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry.stroke",
+    stylers: [{ color: "#1e293b" }],
+  },
+  {
+    featureType: "road.highway",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#cbd5e1" }],
+  },
+  {
+    featureType: "transit",
+    elementType: "geometry",
+    stylers: [{ color: "#1e293b" }],
+  },
+  {
+    featureType: "transit.station",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#cbd5e1" }],
+  },
+  {
+    featureType: "water",
+    elementType: "geometry",
+    stylers: [{ color: "#070b14" }],
+  },
+  {
+    featureType: "water",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#475569" }],
+  },
+  {
+    featureType: "water",
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#070b14" }],
+  },
+]
 
 export default function AmbulanceDashboard() {
   const router = useRouter()
@@ -74,7 +156,7 @@ export default function AmbulanceDashboard() {
       setLoading(false)
     }
     checkProfile()
-  }, [router, supabase])
+  }, [router])
 
   // Live subscription: watch alerts for the current case
   useEffect(() => {
@@ -95,7 +177,6 @@ export default function AmbulanceDashboard() {
 
       if (accepted) {
         setActiveAlert(accepted as Alert)
-        // Look up the hospital + the responder's phone
         const hosp = hospitals.find((h) => h.id === accepted.hospital_id)
         if (hosp) setActiveHospital(hosp)
 
@@ -108,7 +189,6 @@ export default function AmbulanceDashboard() {
           setResponderPhone(profile?.phone || null)
         }
       } else {
-        // No accepted alert — check for newly declined hospitals
         const declinedIds = data.filter((a) => a.status === 'declined').map((a) => a.hospital_id)
         if (declinedIds.length > 0) {
           setHospitals((prev) => prev.filter((h) => !declinedIds.includes(h.id)))
@@ -158,7 +238,6 @@ export default function AmbulanceDashboard() {
             setDirections(result)
             setDirectionsUnavailable(false)
           } else {
-            // Handle directions errors gracefully without spamming console
             setDirections(null)
             setDirectionsUnavailable(true)
             console.log('Directions unavailable (check Google Maps API key/billing)')
@@ -196,20 +275,6 @@ export default function AmbulanceDashboard() {
     setRequestStatus('Creating case...')
 
     try {
-      // Step 1: Create case
-      console.log('Inserting case with data:', {
-        patient_condition: condition,
-        severity,
-        age: parseInt(age),
-        blood_group: bloodGroup,
-        allergies: '',
-        pickup_lat: location.lat,
-        pickup_lng: location.lng,
-        current_lat: location.lat,
-        current_lng: location.lng,
-        status: 'active'
-      })
-
       const { data: newCase, error: caseError } = await supabase
         .from('cases')
         .insert({
@@ -228,19 +293,14 @@ export default function AmbulanceDashboard() {
         .single()
 
       if (caseError) {
-        console.error('Case insert error:', JSON.stringify(caseError, null, 2))
-        console.error('Case error message:', caseError.message)
-        console.error('Case error details:', caseError.details)
-        console.error('Case error hint:', caseError.hint)
+        console.error('Case insert error:', caseError.message)
         setRequestStatus(`❌ DB Error: ${caseError.message}`)
         return
       }
 
-      console.log('Case created:', newCase)
       setCaseId(newCase.id)
       setRequestStatus('AI triaging...')
 
-      // Step 2: Call triage API
       const triageRes = await fetch('/api/triage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -254,21 +314,16 @@ export default function AmbulanceDashboard() {
         })
       })
 
-      const triageText = await triageRes.text()
-      console.log('Triage raw response:', triageText)
-
       if (!triageRes.ok) {
-        setRequestStatus(`❌ Triage API Error: ${triageRes.status} — ${triageText}`)
+        setRequestStatus(`❌ Triage API Error: ${triageRes.status}`)
         return
       }
 
-      const triageData = JSON.parse(triageText)
-      console.log('Triage result:', triageData)
+      const triageData = await triageRes.json()
       setTriageResult(triageData.triage)
 
       setRequestStatus('Finding hospitals...')
 
-      // Step 3: Call recommend API
       const recommendRes = await fetch('/api/recommend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -279,24 +334,19 @@ export default function AmbulanceDashboard() {
         })
       })
 
-      const recommendText = await recommendRes.text()
-      console.log('Recommend raw response:', recommendText)
-
       if (!recommendRes.ok) {
-        setRequestStatus(`❌ Recommend API Error: ${recommendRes.status} — ${recommendText}`)
+        setRequestStatus(`❌ Recommend API Error: ${recommendRes.status}`)
         return
       }
 
-      const recommendData = JSON.parse(recommendText)
+      const recommendData = await recommendRes.json()
       setHospitals(recommendData.hospitals)
 
       setRequestStatus('Ready to send alert')
 
     } catch (err: any) {
-      console.error('Full error object:', JSON.stringify(err, null, 2))
-      console.error('Error message:', err?.message)
-      console.error('Error stack:', err?.stack)
-      setRequestStatus(`❌ Error: ${err?.message || 'Unknown error — check console'}`)
+      console.error(err)
+      setRequestStatus(`❌ Error: ${err?.message || 'Unknown error'}`)
     }
   }
 
@@ -335,7 +385,6 @@ export default function AmbulanceDashboard() {
         body: JSON.stringify({ status: 'arrived' })
       })
       
-      // Reset all state to start fresh
       setActiveAlert(null)
       setActiveHospital(null)
       setResponderPhone(null)
@@ -357,173 +406,230 @@ export default function AmbulanceDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-primary bg-primary">
-        Loading...
+      <div className="min-h-screen flex items-center justify-center text-brand-red bg-[#070b14] font-mono">
+        <div className="flex flex-col items-center gap-3">
+          <Activity className="h-10 w-10 animate-pulse" />
+          <span>ESTABLISHING SECURE GATEWAY...</span>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-secondary">
+    <div className="min-h-screen bg-[#070b14] text-gray-100 flex flex-col">
       {/* Navigation */}
-      <nav className="navbar">
-        <div className="flex justify-between items-center max-w-7xl mx-auto">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-red-500 flex items-center justify-center text-lg font-bold text-white">
-              {operatorProfile?.operator_name?.charAt(0) || 'O'}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#070B14]/80 backdrop-blur-md border-b border-white/5 py-4">
+        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-brand-red/10 border border-brand-red/30 flex items-center justify-center">
+              <Activity className="h-5 w-5 text-brand-red animate-pulse" />
             </div>
-            <span className="text-primary font-medium">{operatorProfile?.operator_name}</span>
+            <span className="text-white font-bold tracking-tight font-mono text-sm">
+              JR // OPERATOR PORTAL
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-bold text-primary">JeevanRoute</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <button className="text-secondary hover:text-primary font-medium">Profile</button>
-            <button onClick={handleLogout} className="text-secondary hover:text-primary font-medium">Logout</button>
-            <span className="text-secondary">🚑 {operatorProfile?.vehicle_number}</span>
+
+          <div className="flex items-center gap-6 text-xs">
+            <span className="text-gray-400 font-mono">
+              CALLSIGN: <span className="text-white font-bold">{operatorProfile?.operator_name}</span>
+            </span>
+            <span className="text-gray-400 font-mono">
+              VEHICLE: <span className="text-brand-red font-bold">{operatorProfile?.vehicle_number}</span>
+            </span>
+            <button 
+              onClick={handleLogout} 
+              className="text-gray-400 hover:text-white transition-colors border border-white/10 rounded px-2.5 py-1 hover:bg-white/5 cursor-pointer font-mono"
+            >
+              DISCONNECT
+            </button>
           </div>
         </div>
       </nav>
 
-      <div className="flex h-[calc(100vh-100px)] p-4 gap-4">
-        {/* Left Panel: Intake */}
-        <GlassCard className="w-1/3 p-6 overflow-y-auto">
-          <h2 className="text-xl font-bold text-primary mb-6">Patient Condition</h2>
+      {/* Main Grid Layout */}
+      <div className="flex-grow pt-20 p-4 flex gap-4 h-[calc(100vh-20px)] overflow-hidden">
+        
+        {/* Left Panel: Triage & Intake form */}
+        <div className="w-1/3 flex flex-col gap-4 overflow-y-auto pr-1">
+          
+          <GlassCard className="p-5 border border-white/5 flex-shrink-0">
+            <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/5">
+              <h2 className="text-sm font-bold text-white uppercase tracking-wider font-mono">
+                Patient Triage Intake
+              </h2>
+              <span className="text-[10px] text-gray-500 font-mono">STATUS: ACTIVE</span>
+            </div>
 
-          {/* Condition Pills */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {CONDITIONS.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setCondition(c.id)}
-                className={`py-3 px-4 rounded-lg border font-medium transition-all ${
-                  condition === c.id
-                    ? 'border-red-500 bg-red-50 text-primary'
-                    : 'border-gray-200 bg-white text-secondary hover:bg-gray-50'
-                }`}
-              >
-                {c.icon} {c.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Severity Slider */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-secondary">Severity</span>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-primary">{severity}</span>
-                <StatusBadge status={getSeverityLabel(severity)} />
+            {/* Condition Pills */}
+            <div className="space-y-2 mb-4">
+              <label className="block text-xs font-mono text-gray-400">PATIENT PRIMARY CONDITION</label>
+              <div className="grid grid-cols-2 gap-2">
+                {CONDITIONS.map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => setCondition(c.id)}
+                    className={`py-2 px-3 rounded-lg border text-xs font-semibold transition-all text-left flex items-center gap-2 cursor-pointer ${
+                      condition === c.id
+                        ? 'border-brand-red bg-brand-red/10 text-white'
+                        : 'border-white/5 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <span>{c.icon}</span>
+                    <span>{c.label}</span>
+                  </button>
+                ))}
               </div>
             </div>
-            <input
-              type="range"
-              min={1}
-              max={10}
-              value={severity}
-              onChange={(e) => setSeverity(parseInt(e.target.value))}
-              className="w-full"
-            />
-            <div className="flex justify-between text-xs text-tertiary mt-2">
-              <span>1 — Mild</span>
-              <span>5 — High</span>
-              <span>10 — Critical</span>
-            </div>
-          </div>
 
-          {/* Age & Blood Group */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block text-sm text-secondary mb-2 font-medium">Age</label>
+            {/* Severity Slider */}
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs font-mono text-gray-400">ACUITY INDEX (SEVERITY)</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-bold text-white">{severity}</span>
+                  <StatusBadge status={getSeverityLabel(severity)} />
+                </div>
+              </div>
               <input
-                type="number"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                className="input"
-                placeholder="45"
+                type="range"
+                min={1}
+                max={10}
+                value={severity}
+                onChange={(e) => setSeverity(parseInt(e.target.value))}
+                className="w-full cursor-pointer"
               />
+              <div className="flex justify-between text-[10px] text-gray-500 font-mono mt-1">
+                <span>1 - STABLE</span>
+                <span>5 - HIGH</span>
+                <span>10 - CRITICAL</span>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm text-secondary mb-2 font-medium">Blood Group</label>
-              <select
-                value={bloodGroup}
-                onChange={(e) => setBloodGroup(e.target.value)}
-                className="input"
-              >
-                <option value="">Select</option>
-                {BLOOD_GROUPS.map((bg) => (
-                  <option key={bg} value={bg}>{bg}</option>
-                ))}
-              </select>
-            </div>
-          </div>
 
-          {/* Location */}
-          <div className="mb-6">
-            <label className="block text-sm text-secondary mb-2 font-medium">Location</label>
-            <div className="flex gap-3 mb-3">
-              <button
-                onClick={detectLocation}
-                disabled={locating}
-                className="flex-1 py-3 px-4 rounded-lg border border-gray-300 bg-white text-primary font-medium hover:bg-gray-50 transition-all"
-              >
-                {locating ? 'Detecting...' : '📍 Auto'}
-              </button>
-              <button className="py-3 px-4 rounded-lg border border-gray-300 bg-white text-primary font-medium hover:bg-gray-50 transition-all">
-                Manual
-              </button>
+            {/* Age & Blood Group */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-mono text-gray-400">AGE</label>
+                <input
+                  type="number"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  className="input text-xs"
+                  placeholder="e.g. 45"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-mono text-gray-400">BLOOD GROUP</label>
+                <select
+                  value={bloodGroup}
+                  onChange={(e) => setBloodGroup(e.target.value)}
+                  className="input text-xs"
+                >
+                  <option value="">SELECT</option>
+                  {BLOOD_GROUPS.map((bg) => (
+                    <option key={bg} value={bg}>{bg}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            {location && (
-              <p className="text-sm text-secondary">
-                {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
-              </p>
+
+            {/* Geolocation */}
+            <div className="mb-4">
+              <label className="block text-xs font-mono text-gray-400 mb-2">OPERATOR GEOLOCATION</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={detectLocation}
+                  disabled={locating}
+                  className="flex-1 py-2 px-3 rounded-lg border border-white/10 bg-white/5 text-xs text-white font-semibold hover:bg-white/10 transition-all cursor-pointer"
+                >
+                  {locating ? 'Locking Signal...' : '🛰️ Detect GPS'}
+                </button>
+                {location && (
+                  <div className="flex items-center px-3 border border-white/5 bg-white/5 rounded-lg text-xs font-mono text-brand-red">
+                    {location.lat.toFixed(4)}N, {location.lng.toFixed(4)}E
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Suggest Button */}
+            <GlassButton
+              variant="primary"
+              className="w-full py-3 text-xs font-mono tracking-wider"
+              onClick={handleSuggestHospitals}
+              disabled={!condition || !age || !bloodGroup || !location}
+            >
+              RUN AI ROUTE SEARCH
+            </GlassButton>
+
+            {/* Status log */}
+            {requestStatus && (
+              <div className="mt-3 p-2 bg-white/5 border border-white/5 rounded text-[10px] text-gray-400 font-mono text-center">
+                {requestStatus}
+              </div>
             )}
-          </div>
+          </GlassCard>
 
-          {/* Suggest Button */}
-          <GlassButton
-            variant="primary"
-            className="w-full"
-            onClick={handleSuggestHospitals}
-            disabled={!condition || !age || !bloodGroup || !location}
-          >
-            Suggest Hospital
-          </GlassButton>
-
-          {/* Status */}
-          {requestStatus && (
-            <p className="text-center text-secondary mt-4">{requestStatus}</p>
+          {/* AI Triage Recommendation Panel */}
+          {triageResult && (
+            <GlassCard className="p-4 border border-white/5 bg-brand-red/5 flex-shrink-0 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-white font-mono uppercase">
+                <Siren className="h-4 w-4 text-brand-red" />
+                <span>AI Clinical Report</span>
+              </div>
+              <div className="text-xs space-y-2 font-mono text-gray-300">
+                <div>
+                  <span className="text-gray-500">SEVERITY LEVEL:</span> {triageResult.urgency}
+                </div>
+                <div>
+                  <span className="text-gray-500">RECOMMENDED DEPT:</span> {triageResult.required_specialty}
+                </div>
+                {triageResult.equipment_needed?.length > 0 && (
+                  <div>
+                    <span className="text-gray-500">EQUIPMENT NEEDED:</span> {triageResult.equipment_needed.join(', ')}
+                  </div>
+                )}
+                {triageResult.prep_instructions?.length > 0 && (
+                  <div className="p-2 bg-brand-navy-dark/95 border border-white/5 rounded text-gray-400 text-[10px] leading-relaxed">
+                    <span className="text-gray-500 block mb-1">PREP INSTRUCTIONS:</span>
+                    {triageResult.prep_instructions.join('. ')}
+                  </div>
+                )}
+              </div>
+            </GlassCard>
           )}
-        </GlassCard>
+        </div>
 
-        {/* Right Panel: Map & Hospitals */}
-        <GlassCard className="flex-1 flex flex-col">
-          <div className="flex-1 bg-gray-50 rounded-xl m-4 overflow-hidden relative min-h-[300px] border border-gray-200">
+        {/* Right Panel: Map & Action Dashboard */}
+        <div className="flex-1 flex flex-col gap-4 overflow-hidden">
+          
+          {/* Map Frame */}
+          <div className="flex-grow rounded-xl overflow-hidden relative border border-white/5 bg-[#090d16]">
             {!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-tertiary text-lg px-6 text-center">
+                <span className="text-gray-500 text-xs font-mono">
                   ⚠️ Missing NEXT_PUBLIC_GOOGLE_MAPS_API_KEY in .env.local
                 </span>
               </div>
             ) : mapLoadError ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-tertiary text-lg px-6 text-center">
-                  ⚠️ Map failed to load — check API key restrictions
+                <span className="text-gray-500 text-xs font-mono">
+                  ⚠️ Google Maps API failed to load
                 </span>
               </div>
             ) : !mapLoaded ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-tertiary text-lg">Loading map…</span>
+              <div className="absolute inset-0 flex items-center justify-center font-mono text-xs text-gray-400">
+                CONNECTING MAP TELEMETRY...
               </div>
             ) : (
               <GoogleMap
                 mapContainerStyle={{ width: '100%', height: '100%' }}
                 center={location || { lat: 28.6139, lng: 77.2090 }}
                 zoom={location ? 12 : 10}
-                  options={{
-                    disableDefaultUI: false,
-                    zoomControl: true,
-                  }}
+                options={{
+                  disableDefaultUI: false,
+                  zoomControl: true,
+                  styles: darkMapStyle,
+                }}
               >
                 {location && (
                   <Marker
@@ -531,12 +637,12 @@ export default function AmbulanceDashboard() {
                     icon={{
                       path: window.google.maps.SymbolPath.CIRCLE,
                       scale: 9,
-                      fillColor: '#EF4444',
+                      fillColor: '#E11D48',
                       fillOpacity: 1,
                       strokeColor: '#ffffff',
                       strokeWeight: 2,
                     }}
-                    title="Ambulance (your location)"
+                    title="Ambulance callsign"
                   />
                 )}
                 {activeAlert && activeHospital ? (
@@ -550,7 +656,7 @@ export default function AmbulanceDashboard() {
                         directions={directions}
                         options={{
                           suppressMarkers: true,
-                          polylineOptions: { strokeColor: '#22C55E', strokeWeight: 5 },
+                          polylineOptions: { strokeColor: '#10B981', strokeWeight: 5 },
                         }}
                       />
                     )}
@@ -568,88 +674,98 @@ export default function AmbulanceDashboard() {
                 )}
               </GoogleMap>
             )}
+
+            {/* Overlay telemetry info */}
+            <div className="absolute top-3 left-3 bg-brand-navy-dark/95 border border-white/10 rounded px-2.5 py-1 text-[10px] font-mono text-gray-300">
+              <span className="text-brand-red animate-ping mr-1.5">•</span>
+              LIVE GPS LOGGED
+            </div>
           </div>
+
           {directionsUnavailable && (
-            <div className="px-4 pb-2">
-              <p className="text-xs text-tertiary text-center">
-                📍 Estimated distance shown — live routing temporarily unavailable
+            <div className="px-2">
+              <p className="text-[10px] text-gray-500 font-mono text-center">
+                ⚠️ Live path-finding unavailable. Map shows straight-line coordinates.
               </p>
             </div>
           )}
+
+          {/* Active alerts or recommendations selection */}
           {activeAlert && activeHospital ? (
-            <div className="p-4 border-t border-gray-200">
-              <h3 className="text-2xl font-bold text-primary mb-4">🚑 En Route To Hospital</h3>
-              <GlassCard className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  <div>
-                    <p className="text-tertiary text-xs uppercase tracking-wide mb-1 font-bold">Hospital</p>
-                    <p className="text-primary font-bold text-xl">{activeHospital.name}</p>
-                    <p className="text-secondary text-lg mt-1">{activeHospital.address}</p>
-                  </div>
-                  <div>
-                    <p className="text-tertiary text-xs uppercase tracking-wide mb-1 font-bold">Distance</p>
-                    <p className="text-primary font-bold text-xl">
-                      {directions
-                        ? directions.routes[0]?.legs[0]?.distance?.text
-                        : `${activeHospital.distance_km?.toFixed(1)} km`}
-                    </p>
-                    {directions && (
-                      <p className="text-secondary text-lg mt-1">
-                        ETA: {directions.routes[0]?.legs[0]?.duration?.text}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-tertiary text-xs uppercase tracking-wide mb-1 font-bold">Hospital Contact</p>
-                    <p className="text-primary font-bold text-xl">
-                      {responderPhone ? (
-                        <a href={`tel:${responderPhone}`} className="text-green-600 hover:text-green-700">
-                          {responderPhone}
-                        </a>
-                      ) : 'Not available'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-tertiary text-xs uppercase tracking-wide mb-1 font-bold">Status</p>
-                    <StatusBadge status={activeAlert.status} />
-                  </div>
+            <GlassCard className="p-4 border border-white/5 bg-medical-emerald/5 flex-shrink-0">
+              <div className="flex items-center gap-2 mb-3 text-xs font-bold text-white uppercase tracking-wider font-mono">
+                <Navigation className="h-4 w-4 text-medical-emerald animate-pulse" />
+                <span>TRANSIT MISSION ACTIVE</span>
+              </div>
+              <div className="grid grid-cols-4 gap-4 mb-4 font-mono text-xs text-gray-300">
+                <div className="col-span-2">
+                  <span className="text-[10px] text-gray-500 block">RECEIVING CENTER</span>
+                  <span className="text-white font-bold">{activeHospital.name}</span>
+                  <span className="text-gray-400 block text-[10px] truncate">{activeHospital.address}</span>
                 </div>
-                <div className="flex gap-4">
-                  <GlassButton
-                    variant="success"
-                    className="flex-1 py-4 text-lg font-bold"
-                    onClick={() => {
-                      if (activeHospital) {
-                        window.open(`https://www.google.com/maps/dir/?api=1&destination=${activeHospital.lat},${activeHospital.lng}`, '_blank');
-                      }
-                    }}
-                  >
-                    🗺️ Get Directions
-                  </GlassButton>
-                  <GlassButton
-                    variant="primary"
-                    className="flex-1 py-4 text-lg font-bold"
-                    onClick={handleMarkArrived}
-                  >
-                    ✅ Mark Arrived
-                  </GlassButton>
+                <div>
+                  <span className="text-[10px] text-gray-500 block">ETA METRIC</span>
+                  <span className="text-brand-red font-bold">
+                    {directions
+                      ? directions.routes[0]?.legs[0]?.duration?.text
+                      : `${activeHospital.distance_km?.toFixed(1)} km`}
+                  </span>
                 </div>
-              </GlassCard>
-            </div>
+                <div>
+                  <span className="text-[10px] text-gray-500 block">ER BAY STATUS</span>
+                  <StatusBadge status={activeAlert.status} />
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                {responderPhone && (
+                  <a 
+                    href={`tel:${responderPhone}`} 
+                    className="flex-1 inline-flex items-center justify-center gap-2 rounded-lg border border-white/5 hover:border-white/10 bg-white/5 hover:bg-white/10 px-4 py-2.5 text-xs font-semibold text-white transition-all active:scale-98"
+                  >
+                    <Phone className="h-3.5 w-3.5" /> Call ER Desk
+                  </a>
+                )}
+                <GlassButton
+                  variant="primary"
+                  className="flex-1 text-xs font-mono py-2.5"
+                  onClick={handleMarkArrived}
+                >
+                  CONFIRM ARRIVAL AT BAY
+                </GlassButton>
+              </div>
+            </GlassCard>
           ) : (
             hospitals.length > 0 && (
-              <div className="p-4 border-t border-gray-200">
-                <h3 className="text-lg font-bold text-primary mb-4">Top Recommended Hospitals</h3>
-                <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 border border-white/5 bg-brand-navy-light/10 rounded-xl flex-shrink-0 overflow-y-auto max-h-[220px]">
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono mb-3">
+                  AI Hospital Recommendations
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
                   {hospitals.slice(0, 4).map((hospital) => (
-                    <div key={hospital.id} className="relative">
-                      <HospitalCard hospital={hospital} />
+                    <div 
+                      key={hospital.id} 
+                      className="p-3 rounded-lg border border-white/5 bg-brand-navy-dark/95 flex flex-col justify-between"
+                    >
+                      <div className="mb-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-white font-bold truncate max-w-[140px]">
+                            {hospital.name}
+                          </span>
+                          <span className="text-[9px] font-mono text-brand-red font-bold">
+                            {hospital.distance_km?.toFixed(1)} km
+                          </span>
+                        </div>
+                        <p className="text-[9px] text-gray-500 font-mono">
+                          MATCH: {(hospital.score * 100).toFixed(0)}% | BEDS: {hospital.available_beds}
+                        </p>
+                      </div>
                       <GlassButton
-                        variant="success"
-                        className="w-full mt-2"
+                        variant="secondary"
+                        className="py-1 text-[10px] font-mono"
                         onClick={() => handleSendAlert(hospital)}
                       >
-                        Send Alert
+                        TRANSMIT TELEMETRY & ALERT
                       </GlassButton>
                     </div>
                   ))}
@@ -657,7 +773,8 @@ export default function AmbulanceDashboard() {
               </div>
             )
           )}
-        </GlassCard>
+        </div>
+
       </div>
     </div>
   )

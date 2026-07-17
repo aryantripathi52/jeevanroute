@@ -1,62 +1,179 @@
-# JeevanRoute
+# 🚑 JeevanRoute
+### AI-Powered Ambulance Routing — Get to the Right Hospital, Not Just the Nearest One
 
-🚀 **Live Demo**: [https://jeevanroute.vercel.app](https://jeevanroute.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-16.2.9-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-19.2.4-blue?style=for-the-badge&logo=react)](https://react.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com)
+[![Supabase](https://img.shields.io/badge/Supabase-Database%20%26%20Realtime-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
+[![Google Maps](https://img.shields.io/badge/Google_Maps-Routing%20%26%20Places-4285F4?style=for-the-badge&logo=google-maps)](https://mapsplatform.google.com)
+[![Gemini](https://img.shields.io/badge/Gemini-AI%20Triage-8E75C2?style=for-the-badge&logo=google-gemini)](https://deepmind.google/technologies/gemini/)
 
-AI-powered routing for ambulances across India. Connecting patients with the nearest available hospitals in real-time.
+---
 
-## Features
+## 🧠 The Problem
 
-- 🚑 **Ambulance Dashboard**: Real-time navigation and patient management
-- 🏥 **Hospital Dashboard**: View incoming patients and manage bed availability
-- 🤖 **AI Triage**: Analyze patient symptoms and urgency
-- 📍 **Real-time Routing**: Get fastest routes with live traffic data
-- 💎 **Gemini-Powered**: We use Gemini for intelligent hospital suggestions
+Every year, thousands of patients in India lose their lives during the critical **Golden Hour** (the first 60 minutes after a medical emergency) because ambulances automatically navigate to the *nearest* physical hospital. 
 
-## Tech Stack
+Often, the nearest hospital:
+- Lacks vacant ICU or ventilator beds.
+- Does not have the required specialist (e.g., Cardiologist, Trauma Surgeon) on duty.
+- Lacks the correct blood group or specialized medical equipment.
 
-- **Next.js 16** - Modern React framework
-- **Tailwind CSS** - Utility-first CSS framework
-- **Supabase** - Authentication and database
-- **Google Maps API** - Mapping and routing
-- **Gemini** - AI-powered hospital suggestions
+By the time the ambulance arrives and the facility is determined to be inadequate, critical time is lost. **JeevanRoute solves this coordination issue in under 8 seconds.**
 
-## Getting Started
+---
 
-First, run the development server:
+## ✨ Features
 
+JeevanRoute connects patients, ambulance operators, and emergency departments through a real-time, AI-driven dual-dashboard system.
+
+### 🚑 Ambulance Operator Dashboard
+- **Structured Intake Form**: Quick input for patient condition (Cardiac, Trauma, Burns, Maternity, Neurological, etc.), severity score (1-10), age, blood group, and allergies.
+- **AI Triage Integration**: Triage results determine the exact medical specialties, urgent equipment needed, and initial emergency requirements.
+- **Intelligent Recommendations**: Displays the Top 3 best-matched hospitals ranked by a composite score of specialty compatibility, distance, and live bed/ICU availability.
+- **Real-Time Routing & Telemetry**: Dynamic map routing using the Google Maps Directions API, tracking estimated arrival times (ETA).
+- **Auto-Failover Logic**: If a chosen hospital declines the incoming emergency, the system automatically detects the state update, captures the moving ambulance's current GPS location, recalculates the triage routing, and alerts the next best hospital instantly.
+
+### 🏥 Hospital ER Dashboard
+- **Instant Emergency Alerts**: Real-time popups with audible notifications containing full case details.
+- **Interactive AI Prep Checklist**: A step-by-step checklist dynamically generated for the specific medical emergency (e.g., "Prepare Defibrillator", "O- Blood Standby", "Clear ICU Bay 3").
+- **Live Dispatch Telemetry**: Countdowns displaying live ETA and current coordinates of incoming ambulances.
+- **Dynamic Decision Board**: Instant Accept/Decline actions to coordinate capacity with nearby dispatchers.
+
+---
+
+## 🔄 Auto-Failover Flow
+
+```mermaid
+graph TD
+    A[Ambulance Sends Alert to Hospital #1] --> B[Hospital #1 Reviews Alert]
+    B -->|Accepts| C[Ambulance Routed & Hospital Prepares]
+    B -->|Declines| D[Supabase Realtime triggers Auto-Failover]
+    D --> E[Re-fetch moving Ambulance GPS Coordinates]
+    E --> F[Re-score remaining eligible Hospitals]
+    F --> G[Auto-select and Route to Hospital #2]
+    G --> H[Ambulance UI Updates automatically]
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology | Description |
+|---|---|---|
+| **Frontend** | `Next.js 16` + `React 19` | Modern, responsive server-rendered app structure. |
+| **Styling** | `Tailwind CSS v4` | Modern CSS styling. |
+| **Database & Realtime** | `Supabase` | PostgreSQL database storing cases/alerts with active WebSockets for instant synchronization. |
+| **Maps & Places** | `Google Maps Platform` | Handles geocoding, autocomplete, and live turn-by-turn route calculations. |
+| **AI Engine** | `Gemini API` | Tailors checklists, handles triage classification, and analyzes patient vitals. |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 18+ installed on your system.
+- A Supabase project with Realtime enabled.
+- A Google Cloud Platform project with the following APIs enabled:
+  - Maps JavaScript API
+  - Directions API
+  - Places API
+  - Geocoding API
+
+### 1. Clone & Install
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/your-team/jeevanroute.git
+cd jeevanroute
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## Environment Variables
-
-Create a `.env.local` file in the root directory with the following:
-
-```
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+### 2. Configure Environment Variables
+Create a `.env.local` file in the root directory:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_key
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 GEMINI_API_KEY=your_gemini_api_key
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-## Learn More
+### 3. Setup Database Schema
+Initialize your Supabase database using the schema provided:
+1. Copy the SQL commands from `supabase/schema.sql`.
+2. Paste and run them inside your Supabase Project's SQL Editor.
+3. Seed sample hospital data:
+   ```bash
+   node seed-supabase-js.mjs
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Run Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-## Deploy on Vercel
+## 📁 Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+jeevanroute/
+├── app/
+│   ├── page.tsx                    # Landing page / Role selector
+│   ├── layout.tsx                  # Global layout wrapper
+│   ├── globals.css                 # Base stylesheet
+│   ├── auth/                       # Sign in / Sign up flows
+│   ├── ambulance/
+│   │   ├── page.tsx                # Ambulance main dashboard
+│   │   ├── intake/
+│   │   │   └── page.tsx            # Patient intake form
+│   │   └── results/
+│   │       └── [id]/
+│   │           └── page.tsx        # Hospital selection and active routing
+│   ├── hospital/
+│   │   ├── page.tsx                # Hospital emergency control panel
+│   │   ├── incoming/
+│   │   │   └── page.tsx            # Incoming dispatch alerts (live)
+│   │   └── prep/
+│   │       └── [alertId]/
+│   │           └── page.tsx        # Dynamic AI prep checklist
+│   └── api/
+│       ├── alert/                  # Send alerts to hospital
+│       ├── auth/                   # Session authentication endpoints
+│       ├── case/                   # Live case status query
+│       ├── recommend/              # Proximity/Specialty scoring model
+│       ├── reroute/                # Failover redirection route
+│       └── triage/                 # AI triage results parser
+├── components/                     # Core React & Glassmorphism UI elements
+│   ├── AdminDashboard.tsx
+│   ├── DriverDashboard.tsx
+│   ├── HospitalCard.tsx
+│   ├── SignIn.tsx
+│   └── ...
+├── lib/                            # Integrations & Utilities
+│   ├── maps.ts                     # Distance & route logic
+│   ├── supabase.ts                 # Supabase client instantiation
+│   └── claude.ts                   # Local classification logic
+├── supabase/
+│   └── schema.sql                  # Database tables, triggers, and indices
+└── package.json
+```
 
-Make sure to add all environment variables in your Vercel project settings before deploying.
+---
+
+## 🎯 Demo Guide
+
+To test the real-time failover coordination flow locally:
+1. Open two browser windows side-by-side:
+   - **Left Window**: [http://localhost:3000/ambulance](http://localhost:3000/ambulance)
+   - **Right Window**: [http://localhost:3000/hospital](http://localhost:3000/hospital)
+2. Submit a new case on the **Ambulance** dashboard via the Patient Intake screen.
+3. Observe the alert immediately appear on the **Hospital** dashboard via Supabase Realtime subscriptions.
+4. Click **Decline** on the Hospital screen.
+5. Watch the Ambulance view instantly transition into `Rerouting...` status, fetch its current location, and establish a new route to the second-best matched hospital automatically.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

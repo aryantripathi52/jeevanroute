@@ -4,9 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import GlassCard from '@/components/GlassCard'
-import GlassInput from '@/components/GlassInput'
-import GlassButton from '@/components/GlassButton'
+import { Brain, Navigation, Activity, ArrowLeft, ShieldAlert } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -96,133 +94,218 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-secondary">
-      <GlassCard className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-xl">JR</span>
-          </div>
-          <h1 className="text-2xl font-bold text-primary">JeevanRoute</h1>
-          <p className="text-secondary text-sm mt-1">Every second counts</p>
+    <div className="min-h-screen bg-[#090d16] flex flex-col lg:flex-row relative overflow-hidden font-sans text-gray-100">
+      
+      {/* 1. Left Column (The Brand/Context) - Hidden on Mobile */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#020617] relative flex-col justify-between p-12 border-r border-white/5 overflow-hidden">
+        
+        {/* Animated SVG Map Mesh Background */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <svg className="w-full h-full" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="rgba(225, 29, 72, 0.15)" strokeWidth="1">
+              {[...Array(15)].map((_, i) => (
+                <line key={`lh-${i}`} x1="0" y1={i * 40} x2="500" y2={i * 40} />
+              ))}
+              {[...Array(15)].map((_, i) => (
+                <line key={`lv-${i}`} x1={i * 40} y1="0" x2={i * 40} y2="500" />
+              ))}
+            </g>
+            <circle cx="160" cy="200" r="40" fill="rgba(99, 102, 241, 0.1)" className="animate-pulse" />
+            <circle cx="360" cy="320" r="60" fill="rgba(225, 29, 72, 0.08)" className="animate-pulse-soft" />
+            
+            <path d="M40,240 Q160,160 280,240 T440,240" stroke="#E11D48" strokeWidth="2" strokeOpacity="0.4" strokeDasharray="5 5" />
+            <path d="M120,400 Q240,280 360,400" stroke="#6366F1" strokeWidth="2" strokeOpacity="0.3" strokeDasharray="5 5" />
+          </svg>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 mb-4">
-            <p className="text-sm">{error}</p>
+        {/* Brand Header */}
+        <Link href="/" className="relative z-10 flex items-center gap-3 group">
+          <div className="relative flex items-center justify-center w-9 h-9 rounded-lg bg-brand-red/10 border border-brand-red/30 group-hover:bg-brand-red/20 transition-colors">
+            <Activity className="h-5 w-5 text-brand-red" />
           </div>
-        )}
+          <span className="font-bold text-lg text-white">
+            JR <span className="text-gray-300 font-light">JeevanRoute</span>
+          </span>
+        </Link>
 
-        <div className="space-y-3 mb-6">
-          <p className="text-secondary text-sm text-center">Sign in as:</p>
-          
-          <button
-            onClick={() => handleGoogleLogin('ambulance')}
-            disabled={googleLoading === 'ambulance'}
-            className="w-full btn btn-secondary py-3"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            <span>{googleLoading === 'ambulance' ? 'Signing in...' : '🚑 Continue as Ambulance Operator'}</span>
-          </button>
+        {/* Central Core Pitch */}
+        <div className="relative z-10 my-auto max-w-lg space-y-6">
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight font-sans">
+            Every Second Counts.<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-brand-red">
+              Connecting Ambulances & Hospitals in Real-Time.
+            </span>
+          </h2>
+          <p className="text-sm text-gray-400 font-light leading-relaxed">
+            JeevanRoute streamlines critical medical dispatches, enabling instant routing, telemetry broadcasts, and zero-delay hospital slots.
+          </p>
 
-          <button
-            onClick={() => handleGoogleLogin('hospital')}
-            disabled={googleLoading === 'hospital'}
-            className="w-full btn btn-secondary py-3"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            <span>{googleLoading === 'hospital' ? 'Signing in...' : '🏥 Continue as Hospital Staff'}</span>
-          </button>
-        </div>
+          {/* feature callouts */}
+          <div className="space-y-4 pt-6">
+            <div className="flex items-start gap-4">
+              <div className="p-2 rounded bg-brand-red/10 border border-brand-red/20 text-brand-red mt-0.5 animate-pulse">
+                <Brain className="h-4.5 w-4.5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">AI-Powered Triage</h4>
+                <p className="text-xs text-gray-500 font-light mt-0.5">Vitals analyzed en-route to match specialized medical staff.</p>
+              </div>
+            </div>
 
-        <div className="relative mb-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-secondary">or sign in with email</span>
-          </div>
-        </div>
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="text-secondary text-sm block mb-1 font-medium">Email</label>
-            <GlassInput
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="text-secondary text-sm block mb-1 font-medium">Password</label>
-            <GlassInput
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="mb-4">
-            <label className="text-secondary text-sm block mb-3 font-medium">Sign in as:</label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setRole('ambulance')}
-                className={`p-4 rounded-lg border transition-all ${
-                  role === 'ambulance'
-                    ? 'border-red-500 bg-red-50 text-primary'
-                    : 'border-gray-200 bg-white text-secondary hover:bg-gray-50'
-                }`}
-              >
-                <div className="text-2xl mb-1">🚑</div>
-                <div className="font-medium">Ambulance</div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setRole('hospital')}
-                className={`p-4 rounded-lg border transition-all ${
-                  role === 'hospital'
-                    ? 'border-blue-500 bg-blue-50 text-primary'
-                    : 'border-gray-200 bg-white text-secondary hover:bg-gray-50'
-                }`}
-              >
-                <div className="text-2xl mb-1">🏥</div>
-                <div className="font-medium">Hospital</div>
-              </button>
+            <div className="flex items-start gap-4">
+              <div className="p-2 rounded bg-blue-500/10 border border-blue-500/20 text-blue-500 mt-0.5">
+                <Navigation className="h-4.5 w-4.5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Dynamic Navigation</h4>
+                <p className="text-xs text-gray-500 font-light mt-0.5">Real-time green-corridor prompts bypass signal delays.</p>
+              </div>
             </div>
           </div>
+        </div>
 
-          <GlassButton
-            type="submit"
-            variant="primary"
-            disabled={loading || !role}
-            className="w-full"
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </GlassButton>
-        </form>
-
-        <p className="text-center text-secondary text-sm mt-6">
-          Don't have an account?{' '}
-          <Link href="/auth/signup" className="text-accent hover:text-accent-hover font-medium">
-            Sign Up
+        {/* footer back */}
+        <div className="relative z-10">
+          <Link href="/" className="inline-flex items-center gap-2 text-xs text-gray-500 hover:text-white transition-colors">
+            <ArrowLeft className="h-3.5 w-3.5" /> Back to landing page
           </Link>
-        </p>
-      </GlassCard>
+        </div>
+      </div>
+
+      {/* 2. Right Column (The Auth Cards) */}
+      <div className="flex-1 min-h-screen flex items-center justify-center p-6 md:p-12 relative z-10">
+        
+        {/* Glow point behind card */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-brand-red/5 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div className="w-full max-w-[440px] space-y-6">
+          <div className="text-center lg:text-left space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Sign In
+            </h1>
+            <p className="text-xs text-gray-400 font-light">
+              Secure gateway for validated emergency medical responders
+            </p>
+          </div>
+
+          {error && (
+            <div className="bg-brand-red/10 border border-brand-red/20 text-brand-red rounded-lg p-3 text-xs flex items-center gap-2">
+              <ShieldAlert className="h-4 w-4 flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Card Container */}
+          <div className="rounded-xl border border-white/5 bg-brand-navy-light/10 p-6 sm:p-8 backdrop-blur-md space-y-6">
+            
+            {/* OAuth buttons section */}
+            <div className="space-y-3">
+              <p className="text-gray-400 text-xs text-center font-mono">CONTINUE WITH SECURED OAUTH</p>
+              
+              <button
+                onClick={() => handleGoogleLogin('ambulance')}
+                disabled={googleLoading === 'ambulance'}
+                className="w-full inline-flex items-center justify-center gap-3 rounded-lg border border-white/5 hover:border-white/10 bg-white/5 hover:bg-white/10 px-4 py-3 text-xs font-semibold text-white transition-all active:scale-98 disabled:opacity-50 cursor-pointer"
+              >
+                <svg className="w-4.5 h-4.5" viewBox="0 0 24 24">
+                  <path fill="#ea4335" d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.127 4.114a5.757 5.757 0 0 1-5.76-5.76 5.757 5.757 0 0 1 5.76-5.76c1.5 0 2.85.587 3.863 1.543l3.228-3.229C19.123 1.956 15.897 1 12 1 5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11c0-.772-.082-1.5-.225-2.286H12.24Z" />
+                </svg>
+                <span>{googleLoading === 'ambulance' ? 'Connecting...' : '🚑 Continue as Ambulance'}</span>
+              </button>
+
+              <button
+                onClick={() => handleGoogleLogin('hospital')}
+                disabled={googleLoading === 'hospital'}
+                className="w-full inline-flex items-center justify-center gap-3 rounded-lg border border-white/5 hover:border-white/10 bg-white/5 hover:bg-white/10 px-4 py-3 text-xs font-semibold text-white transition-all active:scale-98 disabled:opacity-50 cursor-pointer"
+              >
+                <svg className="w-4.5 h-4.5" viewBox="0 0 24 24">
+                  <path fill="#ea4335" d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.127 4.114a5.757 5.757 0 0 1-5.76-5.76 5.757 5.757 0 0 1 5.76-5.76c1.5 0 2.85.587 3.863 1.543l3.228-3.229C19.123 1.956 15.897 1 12 1 5.925 1 12 12 12 12s4.925 11 11 11 11-4.925 11-11c0-.772-.082-1.5-.225-2.286H12.24Z" />
+                </svg>
+                <span>{googleLoading === 'hospital' ? 'Connecting...' : '🏥 Continue as Hospital'}</span>
+              </button>
+            </div>
+
+            {/* Divider */}
+            <div className="relative flex items-center justify-center">
+              <div className="w-full border-t border-white/5"></div>
+              <span className="absolute bg-[#090d16] px-3 text-[10px] text-gray-500 font-mono">OR EMAIL PASS</span>
+            </div>
+
+            {/* Email form */}
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-gray-400 text-xs font-mono">EMAIL ADDRESS</label>
+                <input
+                  type="email"
+                  placeholder="name@command.org"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input text-sm"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-gray-400 text-xs font-mono">PASSWORD</label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input text-sm"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-gray-400 text-xs font-mono block">SELECT OPERATIONS PORTAL</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setRole('ambulance')}
+                    className={`py-3 px-2 rounded-lg border text-xs font-semibold transition-all flex flex-col items-center gap-1 cursor-pointer ${
+                      role === 'ambulance'
+                        ? 'border-brand-red bg-brand-red/10 text-white'
+                        : 'border-white/5 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <span className="text-xl">🚑</span>
+                    <span>Ambulance</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setRole('hospital')}
+                    className={`py-3 px-2 rounded-lg border text-xs font-semibold transition-all flex flex-col items-center gap-1 cursor-pointer ${
+                      role === 'hospital'
+                        ? 'border-brand-red bg-brand-red/10 text-white'
+                        : 'border-white/5 bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <span className="text-xl">🏥</span>
+                    <span>Hospital Staff</span>
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || !role}
+                className="w-full btn btn-primary py-3 text-xs font-mono tracking-wider cursor-pointer"
+              >
+                {loading ? 'AUTHENTICATING...' : 'ACCESS PORTAL'}
+              </button>
+            </form>
+          </div>
+
+          <p className="text-center text-xs text-gray-500 font-light">
+            New responder?{' '}
+            <Link href="/auth/signup" className="text-brand-red hover:underline font-semibold">
+              Register Credentials
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
