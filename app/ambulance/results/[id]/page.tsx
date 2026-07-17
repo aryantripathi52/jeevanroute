@@ -658,9 +658,9 @@ export default function ResultsPage() {
                   onChange={(e) => setMapStyle(e.target.value as StyleKey)}
                   className="bg-brand-navy-dark/95 text-white border border-white/10 rounded px-2.5 py-1 text-[10px] font-mono shadow-md focus:outline-none focus:border-brand-red cursor-pointer"
                 >
-                  <option value="default">🛰️ CARTODB DARK</option>
-                  <option value="openstreetmap">🗺️ OSM BRIGHT</option>
-                  <option value="openstreetmap3d">🏙️ OSM 3D LIBERTY</option>
+                  <option value="default" className="bg-brand-navy-dark text-white">🛰️ CARTODB DARK</option>
+                  <option value="openstreetmap" className="bg-brand-navy-dark text-white">🗺️ OSM BRIGHT</option>
+                  <option value="openstreetmap3d" className="bg-brand-navy-dark text-white">🏙️ OSM 3D LIBERTY</option>
                 </select>
               </div>
             </>
