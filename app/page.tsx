@@ -130,21 +130,24 @@ export default function LandingPage() {
 
             {/* Desktop Nav Links */}
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
-                Features
-              </a>
               <a href="#about" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
                 About
               </a>
+              <a href="#features" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
+                Features
+              </a>
               <a href="#faq" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
                 FAQ
+              </a>
+              <a href="#register-hospital" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">
+                Hospital Register
               </a>
             </div>
 
             {/* Desktop CTA */}
             <div className="hidden md:flex items-center gap-3">
               <Link href="/auth/login" className="relative group overflow-hidden rounded-md bg-white text-brand-navy-dark font-medium text-xs px-4 py-2 transition-all duration-200 hover:bg-gray-100 active:scale-95 border border-white/10 cursor-pointer">
-                Login / Register
+                Login
               </Link>
             </div>
 
@@ -165,18 +168,18 @@ export default function LandingPage() {
           <div className="md:hidden bg-brand-navy-dark/95 border-b border-white/5 backdrop-blur-lg">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               <a
-                href="#features"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/5"
-              >
-                Features
-              </a>
-              <a
                 href="#about"
                 onClick={() => setMobileMenuOpen(false)}
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/5"
               >
                 About
+              </a>
+              <a
+                href="#features"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/5"
+              >
+                Features
               </a>
               <a
                 href="#faq"
@@ -185,12 +188,19 @@ export default function LandingPage() {
               >
                 FAQ
               </a>
+              <a
+                href="#register-hospital"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/5"
+              >
+                Hospital Register
+              </a>
               <Link
                 href="/auth/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-md text-base font-medium bg-brand-red text-white text-center"
+                className="block px-3 py-2 rounded-md text-base font-medium bg-brand-red text-white text-center mt-4"
               >
-                Login / Register
+                Login
               </Link>
             </div>
           </div>
@@ -240,7 +250,7 @@ export default function LandingPage() {
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   <Link 
-                    href="/auth/signup"
+                    href="#register-hospital"
                     className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 px-6 py-3.5 text-sm font-semibold text-white hover:text-white transition-all duration-200"
                   >
                     Register Hospital
@@ -692,6 +702,59 @@ export default function LandingPage() {
               })}
             </div>
 
+          </div>
+        </section>
+
+        {/* Register Hospital Section */}
+        <section id="register-hospital" className="relative py-24 bg-brand-navy-dark overflow-hidden">
+          {/* Decorative side grid overlay */}
+          <div className="absolute left-0 bottom-0 w-1/3 h-full bg-medical-emerald/[0.02] pointer-events-none blur-2xl"></div>
+
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center mb-12 space-y-4">
+              <span className="font-mono text-xs text-medical-emerald font-semibold uppercase tracking-widest">
+                ONBOARDING
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight font-sans">
+                Register Your Hospital
+              </h2>
+              <p className="text-sm text-gray-400 font-light">
+                Join the national AI-directed medical transit routing infrastructure. Please provide your facility details below.
+              </p>
+            </div>
+
+            <form className="space-y-6 bg-brand-navy-light/10 border border-white/5 rounded-2xl p-6 sm:p-8 backdrop-blur-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label htmlFor="hospitalName" className="block text-sm font-medium text-gray-300">Hospital Name <span className="text-brand-red">*</span></label>
+                  <input type="text" id="hospitalName" name="hospitalName" required className="w-full bg-brand-navy-dark border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-medical-emerald focus:ring-1 focus:ring-medical-emerald transition-colors" placeholder="e.g. Apollo Hospitals" />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="contactNo" className="block text-sm font-medium text-gray-300">Contact No. <span className="text-brand-red">*</span></label>
+                  <input type="tel" id="contactNo" name="contactNo" required className="w-full bg-brand-navy-dark border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-medical-emerald focus:ring-1 focus:ring-medical-emerald transition-colors" placeholder="+91 XXXXX XXXXX" />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email Address <span className="text-brand-red">*</span></label>
+                  <input type="email" id="email" name="email" required className="w-full bg-brand-navy-dark border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-medical-emerald focus:ring-1 focus:ring-medical-emerald transition-colors" placeholder="admin@hospital.com" />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="address" className="block text-sm font-medium text-gray-300">Full Address <span className="text-brand-red">*</span></label>
+                  <input type="text" id="address" name="address" required className="w-full bg-brand-navy-dark border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-medical-emerald focus:ring-1 focus:ring-medical-emerald transition-colors" placeholder="Street, City, State, PIN" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="facilities" className="block text-sm font-medium text-gray-300">Description of Available Facilities <span className="text-brand-red">*</span></label>
+                <textarea id="facilities" name="facilities" rows={4} required className="w-full bg-brand-navy-dark border border-white/10 rounded-lg px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-medical-emerald focus:ring-1 focus:ring-medical-emerald transition-colors" placeholder="e.g. ICU, Cath Lab, Trauma Center, Number of Beds, Specialities..."></textarea>
+              </div>
+
+              <div className="pt-4">
+                <button type="button" className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-white px-8 py-4 text-sm font-bold text-brand-navy-dark shadow-lg hover:bg-gray-100 hover:shadow-white/20 active:scale-98 transition-all duration-200">
+                  Submit Registration Request
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+            </form>
           </div>
         </section>
       </main>

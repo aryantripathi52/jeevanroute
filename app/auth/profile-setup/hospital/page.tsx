@@ -143,10 +143,10 @@ export default function HospitalProfileSetup() {
               onChange={(e) => setForm({ ...form, role: e.target.value })}
               className="input"
             >
-              <option value="Doctor">Doctor</option>
-              <option value="Nurse">Nurse</option>
-              <option value="Admin">Admin</option>
-              <option value="Receptionist">Receptionist</option>
+              <option className="bg-brand-navy-dark text-white" value="Doctor">Doctor</option>
+              <option className="bg-brand-navy-dark text-white" value="Nurse">Nurse</option>
+              <option className="bg-brand-navy-dark text-white" value="Admin">Admin</option>
+              <option className="bg-brand-navy-dark text-white" value="Receptionist">Receptionist</option>
             </select>
           </div>
 
@@ -169,9 +169,9 @@ export default function HospitalProfileSetup() {
               className="input"
               required
             >
-              <option value="">Select a hospital</option>
+              <option className="bg-brand-navy-dark text-white" value="">Select a hospital</option>
               {hospitals.map((hospital) => (
-                <option key={hospital.id} value={hospital.id}>
+                <option className="bg-brand-navy-dark text-white" key={hospital.id} value={hospital.id}>
                   {hospital.name}
                 </option>
               ))}
