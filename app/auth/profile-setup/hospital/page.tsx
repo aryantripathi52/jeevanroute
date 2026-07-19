@@ -80,7 +80,7 @@ export default function HospitalProfileSetup() {
       .from('hospital_profiles')
       .insert({
         user_id: user.id,
-        name: form.name,
+        full_name: form.name,
         role: form.role,
         phone: form.phone,
         hospital_id: form.hospital_id,
