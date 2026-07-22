@@ -45,7 +45,7 @@ export default function Hero() {
                 </span>
               </h1>
               <p className="text-lg text-gray-400 max-w-xl font-light leading-relaxed">
-                AI-powered real-time routing for ambulances across India. Smart triage, live traffic optimization, and automated hospital alerts.
+                smart algorithm-driven real-time routing for ambulances across India. Smart triage, live traffic optimization, and automated hospital alerts.
               </p>
             </div>
 
@@ -119,7 +119,7 @@ export default function Hero() {
                   {/* Congested Route sections */}
                   <path d="M200,150 Q245,175 290,150" stroke="#EF4444" strokeWidth="4" strokeLinecap="round" strokeOpacity="0.4" />
 
-                  {/* AI Optimized Route (Emergency Red Route Line) */}
+                  {/* Smart Algorithm Optimized Route (Emergency Red Route Line) */}
                   <path d="M50,280 C150,250 208,142 225,123 L280,68" stroke="#E11D48" strokeWidth="3.5" strokeLinecap="round" className="animate-route-flow" id="route-line" />
 
                   {/* Radar Pulse / Hospital coverage */}
@@ -160,7 +160,7 @@ export default function Hero() {
                         FORTIS HOSP. SEC-62
                       </div>
                       <div className="text-gray-500">TRAFFIC INDEX</div>
-                      <div className="text-medical-emerald font-semibold">CLEAR (AI REROUTED)</div>
+                      <div className="text-medical-emerald font-semibold">CLEAR (SMART ALGORITHM REROUTED)</div>
                     </div>
                     <div className="space-y-1 border-l border-white/5 pl-3">
                       <div className="text-gray-500">OPTIMIZED ETA</div>

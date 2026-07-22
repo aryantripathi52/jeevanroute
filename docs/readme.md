@@ -1,5 +1,5 @@
 # 🚑 VitalRoute
-### AI-Powered Ambulance Routing — Get to the Right Hospital, Not Just the Nearest One
+### Smart Algorithm-Driven Ambulance Routing — Get to the Right Hospital, Not Just the Nearest One
 
 > Built at Vibecriminals Hackathon 2026
 
@@ -19,16 +19,16 @@ VitalRoute is a real-time SaaS platform with two dashboards:
 
 ### 🚑 Ambulance Operator Dashboard
 - Fill a quick patient intake form (condition, severity, blood group, age)
-- AI triages the condition and determines required specialty + equipment
+- Smart Algorithm triages the condition and determines required specialty + equipment
 - Get Top 3 hospital recommendations ranked by match score, ETA, and distance
 - One-tap alert to the hospital — they're notified instantly
 - If the hospital declines → **auto-failover**: system re-routes from your current GPS location to the next best hospital automatically
 
 ### 🏥 Hospital Dashboard
 - Receive incoming patient alerts in real time
-- View AI-generated patient summary card with ETA countdown
+- View smart algorithm-generated patient summary card with ETA countdown
 - Accept or Decline (with reason)
-- Get an AI-generated prep checklist: "Prepare defibrillator · O- blood · Cardiologist on standby"
+- Get an smart algorithm-generated prep checklist: "Prepare defibrillator · O- blood · Cardiologist on standby"
 - Track all incoming cases for the shift
 
 ---
@@ -56,7 +56,7 @@ Ambulance UI redirects with new route — no manual action needed
 | Layer | Tech |
 |---|---|
 | Frontend | Next.js 14 + Tailwind CSS |
-| AI Triage | Claude API (Anthropic) |
+| Smart Algorithm Triage | Claude API (Anthropic) |
 | Realtime Sync | Supabase Realtime |
 | Database | Supabase (PostgreSQL) |
 | Maps & Routing | Google Maps Platform |
@@ -118,9 +118,9 @@ vitalroute/
 │   └── hospital/
 │       ├── page.tsx              # Hospital dashboard
 │       ├── incoming/page.tsx     # Live incoming alerts
-│       └── prep/page.tsx         # AI prep checklist
+│       └── prep/page.tsx         # Smart Algorithm prep checklist
 ├── api/
-│   ├── triage/route.ts           # Claude API — AI triage
+│   ├── triage/route.ts           # Claude API — smart algorithm triage
 │   ├── recommend/route.ts        # Hospital recommendation logic
 │   ├── alert/route.ts            # Send alert to hospital
 │   └── reroute/route.ts          # Auto-failover rerouting

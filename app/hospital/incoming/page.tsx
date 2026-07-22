@@ -214,7 +214,7 @@ function IncomingAlertContent() {
           )}
         </div>
 
-        {/* AI summary */}
+        {/* smart algorithm summary */}
         {triage && (
           <div className="mb-4 px-4 py-3 rounded-xl" style={{ background: 'rgba(37,99,235,0.05)', border: '1px solid rgba(37,99,235,0.1)' }}>
             <p className="text-sm font-medium" style={{ color: '#1D4ED8' }}>

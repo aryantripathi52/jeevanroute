@@ -1,12 +1,12 @@
 # 🚑 JeevanRoute
-### AI-Powered Ambulance Routing — Get to the Right Hospital, Not Just the Nearest One
+### Smart Algorithm-Driven Ambulance Routing — Get to the Right Hospital, Not Just the Nearest One
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.9-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19.2.4-blue?style=for-the-badge&logo=react)](https://react.dev)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com)
 [![Supabase](https://img.shields.io/badge/Supabase-Database%20%26%20Realtime-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
-[![Google Maps](https://img.shields.io/badge/Google_Maps-Routing%20%26%20Places-4285F4?style=for-the-badge&logo=google-maps)](https://mapsplatform.google.com)
-[![Gemini](https://img.shields.io/badge/Gemini-AI%20Triage-8E75C2?style=for-the-badge&logo=google-gemini)](https://deepmind.google/technologies/gemini/)
+[![MapLibre](https://img.shields.io/badge/MapLibre-Routing%20%26%20Places-4285F4?style=for-the-badge&logo=maplibre)](https://maplibre.org)
+[![Smart Algo](https://img.shields.io/badge/Prediction-Smart%20Algo%20System-8E75C2?style=for-the-badge)](#)
 
 ---
 
@@ -25,18 +25,18 @@ By the time the ambulance arrives and the facility is determined to be inadequat
 
 ## ✨ Features
 
-JeevanRoute connects patients, ambulance operators, and emergency departments through a real-time, AI-driven dual-dashboard system.
+JeevanRoute connects patients, ambulance operators, and emergency departments through a real-time, smart algorithm-driven dual-dashboard system.
 
 ### 🚑 Ambulance Operator Dashboard
 - **Structured Intake Form**: Quick input for patient condition (Cardiac, Trauma, Burns, Maternity, Neurological, etc.), severity score (1-10), age, blood group, and allergies.
-- **AI Triage Integration**: Triage results determine the exact medical specialties, urgent equipment needed, and initial emergency requirements.
+- **Smart Algo Prediction System**: Algorithmic results determine the exact medical specialties, urgent equipment needed, and initial emergency requirements.
 - **Intelligent Recommendations**: Displays the Top 3 best-matched hospitals ranked by a composite score of specialty compatibility, distance, and live bed/ICU availability.
-- **Real-Time Routing & Telemetry**: Dynamic map routing using the Google Maps Directions API, tracking estimated arrival times (ETA).
+- **Real-Time Routing & Telemetry**: Dynamic map routing using MapLibre, tracking estimated arrival times (ETA).
 - **Auto-Failover Logic**: If a chosen hospital declines the incoming emergency, the system automatically detects the state update, captures the moving ambulance's current GPS location, recalculates the triage routing, and alerts the next best hospital instantly.
 
 ### 🏥 Hospital ER Dashboard
 - **Instant Emergency Alerts**: Real-time popups with audible notifications containing full case details.
-- **Interactive AI Prep Checklist**: A step-by-step checklist dynamically generated for the specific medical emergency (e.g., "Prepare Defibrillator", "O- Blood Standby", "Clear ICU Bay 3").
+- **Interactive Smart Prep Checklist**: A step-by-step checklist dynamically generated for the specific medical emergency (e.g., "Prepare Defibrillator", "O- Blood Standby", "Clear ICU Bay 3").
 - **Live Dispatch Telemetry**: Countdowns displaying live ETA and current coordinates of incoming ambulances.
 - **Dynamic Decision Board**: Instant Accept/Decline actions to coordinate capacity with nearby dispatchers.
 
@@ -64,8 +64,8 @@ graph TD
 | **Frontend** | `Next.js 16` + `React 19` | Modern, responsive server-rendered app structure. |
 | **Styling** | `Tailwind CSS v4` | Modern CSS styling. |
 | **Database & Realtime** | `Supabase` | PostgreSQL database storing cases/alerts with active WebSockets for instant synchronization. |
-| **Maps & Places** | `Google Maps Platform` | Handles geocoding, autocomplete, and live turn-by-turn route calculations. |
-| **AI Engine** | `Gemini API` | Tailors checklists, handles triage classification, and analyzes patient vitals. |
+| **Maps & Places** | `MapLibre` | Handles routing, map rendering, and live turn-by-turn route calculations. |
+| **Prediction System** | `Smart Algo Engine` | Tailors checklists, handles triage classification, and analyzes patient vitals. |
 
 ---
 
@@ -74,11 +74,7 @@ graph TD
 ### Prerequisites
 - Node.js 18+ installed on your system.
 - A Supabase project with Realtime enabled.
-- A Google Cloud Platform project with the following APIs enabled:
-  - Maps JavaScript API
-  - Directions API
-  - Places API
-  - Geocoding API
+- A MapLibre compatible maps service configured.
 
 ### 1. Clone & Install
 ```bash
@@ -136,14 +132,14 @@ jeevanroute/
 │   │   │   └── page.tsx            # Incoming dispatch alerts (live)
 │   │   └── prep/
 │   │       └── [alertId]/
-│   │           └── page.tsx        # Dynamic AI prep checklist
+│   │           └── page.tsx        # Dynamic prep checklist
 │   └── api/
 │       ├── alert/                  # Send alerts to hospital
 │       ├── auth/                   # Session authentication endpoints
 │       ├── case/                   # Live case status query
 │       ├── recommend/              # Proximity/Specialty scoring model
 │       ├── reroute/                # Failover redirection route
-│       └── triage/                 # AI triage results parser
+│       └── triage/                 # Smart Algo prediction results parser
 ├── components/                     # Core React & Glassmorphism UI elements
 │   ├── AdminDashboard.tsx
 │   ├── DriverDashboard.tsx

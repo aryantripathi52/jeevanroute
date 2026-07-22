@@ -24,14 +24,14 @@ export default function Features() {
         {/* Bento Grid */}
         <div className="grid grid-cols-12 gap-6 lg:gap-8">
           
-          {/* Card 1: AI Triage Engine (7 Cols on Desktop) */}
+          {/* Card 1: Smart Algorithm Triage Engine (7 Cols on Desktop) */}
           <div className="col-span-12 lg:col-span-7 rounded-2xl border border-white/5 bg-brand-navy-light/10 p-6 sm:p-8 backdrop-blur-sm flex flex-col justify-between group hover:border-white/10 transition-all duration-300">
             <div>
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2.5 rounded-lg bg-brand-red/10 border border-brand-red/20 text-brand-red">
                   <Brain className="h-6 w-6" />
                 </div>
-                <h3 className="text-xl font-bold text-white font-sans">AI Triage Engine</h3>
+                <h3 className="text-xl font-bold text-white font-sans">Smart Algorithm Triage Engine</h3>
               </div>
               <p className="text-sm text-gray-400 font-light leading-relaxed mb-6">
                 Analyzes live patient symptoms and telemetry en-route to recommend matching hospitals. Checks department workloads, ICU bed availability, and live status of crucial equipment like CT scanners or ventilators.

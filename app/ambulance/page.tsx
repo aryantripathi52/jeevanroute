@@ -356,7 +356,7 @@ export default function AmbulanceDashboard() {
       }
 
       setCaseId(newCase.id)
-      setRequestStatus('AI triaging...')
+      setRequestStatus('Smart Algorithm triaging...')
 
       const triageRes = await fetch('/api/triage', {
         method: 'POST',
@@ -616,7 +616,7 @@ export default function AmbulanceDashboard() {
               onClick={handleSuggestHospitals}
               disabled={!condition || !age || !bloodGroup || !location}
             >
-              RUN AI ROUTE SEARCH
+              RUN Smart Algorithm ROUTE SEARCH
             </GlassButton>
 
             {/* Status log */}
@@ -627,12 +627,12 @@ export default function AmbulanceDashboard() {
             )}
           </GlassCard>
 
-          {/* AI Triage Recommendation Panel */}
+          {/* Smart Algorithm Triage Recommendation Panel */}
           {triageResult && (
             <GlassCard className="p-4 border border-white/5 bg-brand-red/5 flex-shrink-0 space-y-3">
               <div className="flex items-center gap-2 text-xs font-bold text-white font-mono uppercase">
                 <Siren className="h-4 w-4 text-brand-red" />
-                <span>AI Clinical Report</span>
+                <span>Smart Algorithm Clinical Report</span>
               </div>
               <div className="text-xs space-y-2 font-mono text-gray-300">
                 <div>
@@ -785,7 +785,7 @@ export default function AmbulanceDashboard() {
             hospitals.length > 0 && (
               <div className="p-4 border border-white/5 bg-brand-navy-light/10 rounded-xl flex-shrink-0 overflow-y-auto max-h-[220px]">
                 <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono mb-3">
-                  AI Hospital Recommendations
+                  Smart Algorithm Hospital Recommendations
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
                   {hospitals.slice(0, 4).map((hospital) => (

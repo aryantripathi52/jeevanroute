@@ -20,7 +20,7 @@ export default function Stats() {
     },
     {
       id: 'stat-triage',
-      value: 'AI Triage',
+      value: 'Smart Algorithm Triage',
       label: 'Real-time Routing',
       description: 'Patient vitals parsed en-route to automatically secure specific specialty unit allocations before arrival.',
       icon: Cpu,

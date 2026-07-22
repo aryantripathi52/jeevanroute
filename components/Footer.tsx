@@ -20,7 +20,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-xs text-gray-400 font-light leading-relaxed max-w-sm">
-              National AI-directed medical transit routing infrastructure. Streamlining dispatch networks, securing emergency admissions, and optimizing transit routes to protect lives.
+              National smart algorithm-directed medical transit routing infrastructure. Streamlining dispatch networks, securing emergency admissions, and optimizing transit routes to protect lives.
             </p>
             {/* Active Status Badge */}
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-medical-emerald/10 border border-medical-emerald/20 text-medical-emerald text-[10px] font-mono">

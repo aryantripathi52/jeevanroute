@@ -301,7 +301,7 @@ export default function AmbulanceDashboard() {
 
       console.log('Case created:', newCase)
       setCaseId(newCase.id)
-      setRequestStatus('AI triaging...')
+      setRequestStatus('Smart Algorithm triaging...')
 
       // Step 2: Call triage API
       const triageRes = await fetch('/api/triage', {

@@ -64,7 +64,7 @@
 - [ ] Allergies text field (optional)
 - [ ] Auto-detect location button using `navigator.geolocation`
 - [ ] "Find Best Hospital" submit button
-- [ ] Loading state while AI triages
+- [ ] Loading state while Smart Algorithm triages
 
 ### Hospital Recommendation Screen (`/ambulance/results`)
 - [ ] Top 3 hospital cards showing:
@@ -96,7 +96,7 @@
 - [ ] Case log table (all cases this session)
 
 ### Incoming Alert Card (`/hospital/incoming`)
-- [ ] Patient condition headline (AI-generated plain English summary)
+- [ ] Patient condition headline (smart algorithm-generated plain English summary)
 - [ ] Severity badge (color coded)
 - [ ] Patient details: Age, Blood Group, Allergies
 - [ ] ETA countdown timer (live)
@@ -109,7 +109,7 @@
   - Other
 - [ ] Confirm decline button
 
-### AI Prep Checklist (`/hospital/prep`)
+### Smart Algorithm Prep Checklist (`/hospital/prep`)
 - [ ] Auto-generated on Accept
 - [ ] Claude generates checklist based on patient condition
 - [ ] Example for Cardiac: "Prepare defibrillator · O- blood on standby · Cardiologist alerted · ICU Bay cleared"
@@ -159,7 +159,7 @@
 ## 🧪 Testing Checklist (Before Demo)
 
 - [ ] Patient intake form submits correctly
-- [ ] AI triage returns in < 5 seconds
+- [ ] smart algorithm triage returns in < 5 seconds
 - [ ] Top 3 hospitals appear with correct data
 - [ ] Alert reaches hospital dashboard in < 2 seconds
 - [ ] Accept flow completes — ambulance sees confirmation

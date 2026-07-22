@@ -457,7 +457,7 @@ export default function ResultsPage() {
           <Link href="/ambulance" className="text-red-400 hover:text-red-300 transition-colors text-lg">←</Link>
           <div>
             <h1 className="font-bold" style={{ color: '#F9FAFB' }}>Hospital Recommendations</h1>
-            <p className="text-xs" style={{ color: '#9CA3AF' }}>AI-ranked by specialty + proximity</p>
+            <p className="text-xs" style={{ color: '#9CA3AF' }}>Smart Algorithm-ranked by specialty + proximity</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -564,7 +564,7 @@ export default function ResultsPage() {
               {caseData?.ai_triage_result && (
                 <div className="rounded-xl p-4 mb-1" style={{ background: '#111827', border: '1px solid rgba(239,68,68,0.1)' }}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#9CA3AF' }}>AI Triage Result</span>
+                    <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#9CA3AF' }}>Smart Algorithm Triage Result</span>
                     <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{
                       background: caseData.ai_triage_result.urgency === 'critical' ? 'rgba(239,68,68,0.2)' :
                         caseData.ai_triage_result.urgency === 'high' ? 'rgba(234,179,8,0.2)' : 'rgba(34,197,94,0.2)',

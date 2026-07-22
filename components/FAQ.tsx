@@ -23,7 +23,7 @@ export default function FAQ() {
     {
       id: 'faq-failover',
       question: 'How fast is the auto-failover process during emergencies?',
-      answer: 'If the initial receiving hospital does not confirm capacity within 60 seconds, our AI immediately triggers the routing cascade. The platform checks nearby alternatives in less than 500ms, pushes the vitals to the next best match, and triggers audible dashboard alerts for the new ER team.',
+      answer: 'If the initial receiving hospital does not confirm capacity within 60 seconds, our smart algorithm immediately triggers the routing cascade. The platform checks nearby alternatives in less than 500ms, pushes the vitals to the next best match, and triggers audible dashboard alerts for the new ER team.',
     },
   ];
 

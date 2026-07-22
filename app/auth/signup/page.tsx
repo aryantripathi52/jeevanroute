@@ -134,7 +134,7 @@ export default function SignupPage() {
                 <Brain className="h-4.5 w-4.5" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">AI-Powered Triage</h4>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Smart Algorithm-Driven Triage</h4>
                 <p className="text-xs text-gray-500 font-light mt-0.5">Vitals analyzed en-route to match specialized medical staff.</p>
               </div>
             </div>

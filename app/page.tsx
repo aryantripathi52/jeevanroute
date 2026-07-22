@@ -76,7 +76,7 @@ export default function LandingPage() {
     {
       id: 'faq-failover',
       question: 'How fast is the auto-failover process during emergencies?',
-      answer: 'If the initial receiving hospital does not confirm capacity within 60 seconds, our AI immediately triggers the routing cascade. The platform checks nearby alternatives in less than 500ms, pushes the vitals to the next best match, and triggers audible dashboard alerts for the new ER team.',
+      answer: 'If the initial receiving hospital does not confirm capacity within 60 seconds, our smart algorithm immediately triggers the routing cascade. The platform checks nearby alternatives in less than 500ms, pushes the vitals to the next best match, and triggers audible dashboard alerts for the new ER team.',
     },
   ]
 
@@ -99,7 +99,7 @@ export default function LandingPage() {
     },
     {
       id: 'stat-triage',
-      value: 'AI Triage',
+      value: 'Smart Algorithm Triage',
       label: 'Real-time Routing',
       description: 'Patient vitals parsed en-route to automatically secure specific specialty unit allocations before arrival.',
       icon: Cpu,
@@ -236,7 +236,7 @@ export default function LandingPage() {
                     </span>
                   </h1>
                   <p className="text-lg text-gray-400 max-w-xl font-light leading-relaxed">
-                    AI-powered real-time routing for ambulances across India. Smart triage, live traffic optimization, and automated hospital alerts.
+                    smart algorithm-driven real-time routing for ambulances across India. Smart triage, live traffic optimization, and automated hospital alerts.
                   </p>
                 </div>
 
@@ -310,7 +310,7 @@ export default function LandingPage() {
                       {/* Congested Route sections */}
                       <path d="M200,150 Q245,175 290,150" stroke="#EF4444" strokeWidth="4" strokeLinecap="round" strokeOpacity="0.4" />
 
-                      {/* AI Optimized Route (Emergency Red Route Line) */}
+                      {/* Smart Algorithm Optimized Route (Emergency Red Route Line) */}
                       <path d="M50,280 C150,250 208,142 225,123 L280,68" stroke="#E11D48" strokeWidth="3.5" strokeLinecap="round" className="animate-route-flow" id="route-line" />
 
                       {/* Radar Pulse / Hospital coverage */}
@@ -348,7 +348,7 @@ export default function LandingPage() {
                             FORTIS HOSP. SEC-62
                           </div>
                           <div className="text-gray-500">TRAFFIC INDEX</div>
-                          <div className="text-medical-emerald font-semibold">CLEAR (AI REROUTED)</div>
+                          <div className="text-medical-emerald font-semibold">CLEAR (SMART ALGORITHM REROUTED)</div>
                         </div>
                         <div className="space-y-1 border-l border-white/5 pl-3">
                           <div className="text-gray-500">OPTIMIZED ETA</div>
@@ -461,14 +461,14 @@ export default function LandingPage() {
             {/* Bento Grid */}
             <div className="grid grid-cols-12 gap-6 lg:gap-8">
               
-              {/* Card 1: AI Triage Engine */}
+              {/* Card 1: Smart Algorithm Triage Engine */}
               <div className="col-span-12 lg:col-span-7 rounded-2xl border border-white/5 bg-brand-navy-light/10 p-6 sm:p-8 backdrop-blur-sm flex flex-col justify-between group hover:border-white/10 transition-all duration-300">
                 <div>
                   <div className="flex items-center gap-3 mb-6">
                     <div className="p-2.5 rounded-lg bg-brand-red/10 border border-brand-red/20 text-brand-red">
                       <Brain className="h-6 w-6" />
                     </div>
-                    <h3 className="text-xl font-bold text-white font-sans">AI Triage Engine</h3>
+                    <h3 className="text-xl font-bold text-white font-sans">Smart Algorithm Triage Engine</h3>
                   </div>
                   <p className="text-sm text-gray-400 font-light leading-relaxed mb-6">
                     Analyzes live patient symptoms and vitals en-route to recommend matching hospitals. Checks department workloads, ICU bed availability, and live status of crucial equipment like CT scanners or ventilators.
@@ -719,7 +719,7 @@ export default function LandingPage() {
                 Register Your Hospital
               </h2>
               <p className="text-sm text-gray-400 font-light">
-                Join the national AI-directed medical transit routing infrastructure. Please provide your facility details below.
+                Join the national smart algorithm-directed medical transit routing infrastructure. Please provide your facility details below.
               </p>
             </div>
 
@@ -806,7 +806,7 @@ function Footer() {
               </span>
             </div>
             <p className="text-xs text-gray-400 font-light leading-relaxed max-w-sm">
-              National AI-directed medical transit routing infrastructure. Streamlining dispatch networks, securing emergency admissions, and optimizing transit routes to protect lives.
+              National smart algorithm-directed medical transit routing infrastructure. Streamlining dispatch networks, securing emergency admissions, and optimizing transit routes to protect lives.
             </p>
             {/* Active Status Badge */}
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-medical-emerald/10 border border-medical-emerald/20 text-medical-emerald text-[10px] font-mono">
