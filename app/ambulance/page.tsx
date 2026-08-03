@@ -9,6 +9,7 @@ import GlassButton from '@/components/GlassButton'
 import StatusBadge from '@/components/StatusBadge'
 import HospitalCard from '@/components/HospitalCard'
 import Link from 'next/link'
+import EraAssistPanel from '@/components/EraAssistPanel'
 import { Activity, ShieldAlert, Heart, Siren, Compass, Navigation, Phone, ChevronRight } from 'lucide-react'
 
 const CONDITIONS = [
@@ -143,6 +144,9 @@ export default function AmbulanceDashboard() {
 
   const [mapStyle, setMapStyle] = useState<StyleKey>('default')
   const selectedStyle = MAP_STYLES[mapStyle]
+
+  // E.R.A Assist state
+  const [isEraActive, setIsEraActive] = useState(false)
 
   // Tilt/ease camera pitch when style is 3D
   useEffect(() => {
@@ -494,6 +498,17 @@ export default function AmbulanceDashboard() {
             <span className="text-gray-400 font-mono">
               VEHICLE: <span className="text-brand-red font-bold">{operatorProfile?.vehicle_number}</span>
             </span>
+            <button
+              onClick={() => setIsEraActive(!isEraActive)}
+              className={`transition-all duration-300 border rounded px-2.5 py-1 cursor-pointer font-mono flex items-center gap-2 ${
+                isEraActive 
+                  ? 'border-cyan-400/50 text-cyan-400 bg-cyan-400/10 ring-1 ring-cyan-400/50 shadow-[0_0_10px_rgba(34,211,238,0.2)]' 
+                  : 'border-white/10 text-gray-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <div className={`w-2 h-2 rounded-full ${isEraActive ? 'bg-cyan-400 animate-pulse' : 'bg-gray-500'}`} />
+              {isEraActive ? 'E.R.A. Listening...' : 'E.R.A. Assist'}
+            </button>
             <button 
               onClick={handleLogout} 
               className="text-gray-400 hover:text-white transition-colors border border-white/10 rounded px-2.5 py-1 hover:bg-white/5 cursor-pointer font-mono"
@@ -508,7 +523,9 @@ export default function AmbulanceDashboard() {
       <div className="flex-grow pt-20 p-4 flex gap-4 h-[calc(100vh-20px)] overflow-hidden">
         
         {/* Left Panel: Triage & Intake form */}
-        <div className="w-1/3 flex flex-col gap-4 overflow-y-auto pr-1">
+        <div className="w-1/3 relative pr-1 flex flex-col">
+          {isEraActive && <EraAssistPanel onClose={() => setIsEraActive(false)} />}
+          <div className="flex flex-col gap-4 overflow-y-auto h-full">
           
           <GlassCard className="p-5 border border-white/5 flex-shrink-0">
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-white/5">
@@ -655,6 +672,7 @@ export default function AmbulanceDashboard() {
               </div>
             </GlassCard>
           )}
+          </div>
         </div>
 
         {/* Right Panel: Map & Action Dashboard */}
