@@ -1,7 +1,30 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+const rateLimitMap = new Map();
+
+export async function proxy(request: NextRequest) {
+  const ip = request.ip ?? request.headers.get('x-forwarded-for') ?? 'unknown';
+  if (ip !== 'unknown') {
+    const limit = 50; // Requests per window
+    const windowMs = 60 * 1000; // 1 minute
+
+    const currentRate = rateLimitMap.get(ip) || { count: 0, startTime: Date.now() };
+
+    if (Date.now() - currentRate.startTime > windowMs) {
+      currentRate.count = 1;
+      currentRate.startTime = Date.now();
+    } else {
+      currentRate.count++;
+    }
+
+    rateLimitMap.set(ip, currentRate);
+
+    if (currentRate.count > limit) {
+      return new NextResponse('Too Many Requests', { status: 429 });
+    }
+  }
+
   let response = NextResponse.next({
     request,
   })
